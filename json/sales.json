@@ -1,0 +1,79 @@
+{
+    "2013": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized sales/2013/2013_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized sales/2013/2013_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized sales/2013/2013_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized sales/2013/2013_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized sales/2013/2013_statenisland.xls"
+    },
+    "2012": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2012/2012_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2012/2012_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2012/2012_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2012/2012_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2012/2012_statenisland.xls"
+    },
+    "2011": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2011/2011_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2011/2011_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2011/2011_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2011/2011_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2011/2011_statenisland.xls"
+    },
+    "2010": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2010/2010_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2010/2010_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2010/2010_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2010/2010_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2010/2010_statenisland.xls"
+    },
+    "2009": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2009_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2009_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2009_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2009_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2009_statenisland.xls"
+    },
+    "2008": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/09pdf/rolling_sales/sales_2008_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/09pdf/rolling_sales/sales_2008_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/09pdf/rolling_sales/sales_2008_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/pdf/09pdf/rolling_sales/sales_2008_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/09pdf/rolling_sales/sales_2008_statenisland.xls"
+    },
+    "2007": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/sales_2007_manhattan.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/sales_2007_bronx.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/sales_2007_brooklyn.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/sales_2007_queens.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/sales_2007_statenisland.xls"
+    },
+    "2006": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/sales_manhattan_06.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/sales_bronx_06.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/sales_brooklyn_06.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/sales_queens_06.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/sales_si_06.xls"
+    },
+    "2005": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/sales_manhattan_05.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/sales_bronx_05.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/sales_brooklyn_05.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/sales_queens_05.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/sales_si_05.xls"
+    },
+    "2004": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/sales_manhattan_04.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/sales_bronx_04.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/sales_brooklyn_04.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/sales_queens_04.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/sales_si_04.xls"
+    },
+    "2003": {
+        "manhattan": "http://www.nyc.gov/html/dof/downloads/sales_manhattan_03.xls",
+        "bronx": "http://www.nyc.gov/html/dof/downloads/sales_bronx_03.xls",
+        "brooklyn": "http://www.nyc.gov/html/dof/downloads/sales_brooklyn_03.xls",
+        "queens": "http://www.nyc.gov/html/dof/downloads/sales_queens_03.xls",
+        "statenisland": "http://www.nyc.gov/html/dof/downloads/sales_si_03.xls"
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/manhattan_sales_prices.xls",
+    "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/bronx_sales_prices.xls",
+    "brooklyn": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/brooklyn_sales_prices.xls",
+    "queens": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/queens_sales_prices.xls",
+    "statenisland": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/staten_island_sales_prices.xls",
+    "city": {
+        "2013": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/2012_2013/2013_sales_statistics.xls",
+        "2012": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/2012_2013/2012_sales_statistics.xls",
+        "2011": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/2010_2011/2011_sales_statistics.xls",
+        "2010": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/neighborhood_sales/2010_2011/2010_sales_statistics.xls",
+        "2009": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/neighborhood_sales/2009_sale_statistics.xls",
+        "2008": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/neighborhood_sales/citywide_by_boro2009.xls",
+        "2007": "http://www.nyc.gov/html/dof/downloads/excel/rolling_sales/neighborhood_sales/citywide_by_boro.xls"
+    }
+}
