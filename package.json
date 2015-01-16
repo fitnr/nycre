@@ -1,0 +1,15 @@
+{
+  "name": "nycre",
+  "version": "0.0.1",
+  "description": "Parse NYC Finance Department real estate sales files",
+  "main": "index.js",
+  "dependencies": {
+    "j": "^0.4.3",
+    "jsontool": "^7.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+  },
+  "author": "Neil Freeman",
+  "license": "MIT"
+}
