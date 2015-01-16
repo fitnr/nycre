@@ -2,7 +2,8 @@ BIN = node_modules/.bin
 
 ROLLING = json/rolling.json
 
-JSONTOOL = $(shell $(BIN)/json $(1) --array < $(2))
+JSONTOOL = $(shell $(BIN)/json $(2) --array < $(1))
+
 
 BOROUGHS = bronx brooklyn queens manhattan statenisland
 BOROUGHCSV = $(addsuffix .csv,$(BOROUGHS))
@@ -21,7 +22,8 @@ rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 
 .INTERMEDIATE: rolling/raw/city.csv
 rolling/raw/city.csv:
-	{ $(foreach borough,$(BOROUGHS),curl "$(call JSONTOOL,'.$(borough)',$(ROLLING))" | $(BIN)/j -f - ;) } | cat > $@	
+	{ $(foreach borough,$(BOROUGHS),curl "$(call JSONTOOL,$(ROLLING),.$(borough))" | $(BIN)/j -f - ;) } | cat > $@	
+
 
 rolling/raw/borough: ; mkdir -p rolling/raw/borough
 
