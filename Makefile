@@ -19,6 +19,10 @@ SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
 ROLLINGRAWFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
 
+comma = ,
+space :=
+space +=
+
 data: $(SALESFILES) $(SUMMARYFILES)
 
 .PHONY: rolling
@@ -46,7 +50,8 @@ sales/%.csv: | sales
 	
 summaries/%.csv: | summaries
 	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > summaries/$*.xls
-	bin/sheetstack -n year summaries/$*.xls > $@
+	$(eval sheets = $(subst $(space)Sales$(space),$(comma),$(shell $(BIN)/j -l summaries/$*.xls)))
+	bin/sheetstack --groups $(sheets) --group-name year --rm-lines 4 summaries/$*.xls > $@
 
 sales: ; mkdir -p $(addprefix sales/,$(YEARS))
 
