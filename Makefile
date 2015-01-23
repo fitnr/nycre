@@ -18,6 +18,9 @@ BOROUGHCSV = $(addsuffix .csv,$(BOROUGHS))
 
 SALESFILES := $(addprefix sales/,$(addsuffix .csv,$(YEARS)))
 
+SALESBOROUGHCSV := $(addprefix sales/,$(foreach y,$(YEARS),$(addprefix $(y)/,$(BOROUGHCSV))))
+SALESBOROUGHXLS := $(addprefix sales/,$(foreach y,$(YEARS),$(addprefix $(y)/,$(addsuffix .xls,$(BOROUGHS)))))
+
 SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
 ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
@@ -26,7 +29,6 @@ comma = ,
 space :=
 space +=
 
-data: $(SALESFILES) $(SUMMARYFILES)
 
 # Create rolling files 
 
@@ -44,19 +46,29 @@ rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
 rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 	$(BIN)/j -f $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
 
-.INTERMEDIATE: rolling/raw/borough/%.xls
 rolling/raw/borough/%.xls: | rolling/raw/borough
 	curl "$(call JSONTOOL,$(ROLLING),.$*)" > $@
 
-sales/%.csv: | sales
-	{ $(foreach borough,$(BOROUGHS),curl "$(call JSONTOOL,$(SALES),.$*.$(borough))" | $(BIN)/j -f - | tail -n+4 ;) } > $@
-	
+sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
+	@echo $(addprefix sales/%/,$(BOROUGHCSV))
+	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } > $@
+
+.INTERMEDIATE: sales/%.csv
+sales/%.csv: sales/%.xls | sales
+	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | grep -v -e '^$$' -v -e '^,\+$$' > $@
+
+sales/%.xls: | sales
+	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
+	$(eval year = $(shell echo $* | sed 's|/[a-z]*||'))
+
+	curl "$(call JSONTOOL,$(SALES),.$(year).$(borough))" > $@
+
+sales: ; mkdir -p $(addprefix sales/,$(YEARS))
+
 summaries/%.csv: | summaries
 	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > summaries/$*.xls
 	$(eval sheets = $(subst $(space)Sales$(space),$(comma),$(shell $(BIN)/j -l summaries/$*.xls)))
 	bin/sheetstack --groups $(sheets) --group-name year --rm-lines 4 summaries/$*.xls > $@
-
-sales: ; mkdir -p $(addprefix sales/,$(YEARS))
 
 summaries/city: summaries ; mkdir -p summaries/city
 summaries: ; mkdir -p summaries
