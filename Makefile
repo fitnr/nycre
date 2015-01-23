@@ -6,18 +6,21 @@ SUMMARIES = json/summaries.json
 
 ROLLING = json/rolling.json
 
+HEADER = header.txt
+
 JSONTOOL = $(shell $(BIN)/json $(2) --array < $(1))
 
 YEARS = $(shell $(BIN)/json --keys --array < $(SALES))
 
-BOROUGHS = bronx brooklyn queens manhattan statenisland
+BOROUGHS = manhattan bronx brooklyn queens statenisland
+
 BOROUGHCSV = $(addsuffix .csv,$(BOROUGHS))
 
-SALESFILES := $(addprefix sales/,$(foreach y,$(YEARS),$(addprefix $(y)/,$(BOROUGHCSV))))
+SALESFILES := $(addprefix sales/,$(addsuffix .csv,$(YEARS)))
 
 SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
-ROLLINGRAWFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
+ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
 
 comma = ,
 space :=
@@ -25,28 +28,28 @@ space +=
 
 data: $(SALESFILES) $(SUMMARYFILES)
 
-.PHONY: rolling
-rolling: 
+# Create rolling files 
 
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(eval y = $(shell date -jf '%Y-%m' '$*' +'%y'))
 	$(eval m = $(shell date -jf '%Y-%m' '$*' +'%-m'))
-
-	grep $< -e '$(m)/[0-9][0-9]\?/$(y)' > $@
+	{ cat $(HEADER) ; grep $< -e '$(m)/[0-9][0-9]\?/$(y)' ; } > $@
 
 .INTERMEDIATE: rolling/raw/city.csv
-rolling/raw/city.csv:
-	{ $(foreach borough,$(BOROUGHS),curl "$(call JSONTOOL,$(ROLLING),.$(borough))" | $(BIN)/j -f - ;) } | cat > $@	
+rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
+	{ cat $(HEADER) ; $(foreach csv,$(ROLLINGCSVFILES), tail -n+6 $(csv) ;) } > $@	
+
+.INTERMEDIATE: rolling/raw/borough/%.csv
+rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
+	$(BIN)/j -f $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
+
+.INTERMEDIATE: rolling/raw/borough/%.xls
+rolling/raw/borough/%.xls: | rolling/raw/borough
+	curl "$(call JSONTOOL,$(ROLLING),.$*)" > $@
 
 sales/%.csv: | sales
-	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
-	$(eval year = $(shell echo $* | sed 's|/[a-z]*||'))
-	$(eval URL = $(call JSONTOOL,$(SALES),.$(year).$(borough)))
-	@echo .$(year).$(borough)
-	@echo "$(call JSONTOOL,$(SALES),.$(year).$(borough))"
-	@echo "$(call JSONTOOL,$(SALES),.$(year))"
-	curl "$(URL)" | $(BIN)/j -f - > $@
+	{ $(foreach borough,$(BOROUGHS),curl "$(call JSONTOOL,$(SALES),.$*.$(borough))" | $(BIN)/j -f - | tail -n+4 ;) } > $@
 	
 summaries/%.csv: | summaries
 	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > summaries/$*.xls
