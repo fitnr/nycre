@@ -29,9 +29,7 @@ comma = ,
 space :=
 space +=
 
-
 # Create rolling files 
-
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(eval y = $(shell date -jf '%Y-%m' '$*' +'%y'))
@@ -65,10 +63,15 @@ sales/%.xls: | sales
 
 sales: ; mkdir -p $(addprefix sales/,$(YEARS))
 
-summaries/%.csv: | summaries
-	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > summaries/$*.xls
-	$(eval sheets = $(subst $(space)Sales$(space),$(comma),$(shell $(BIN)/j -l summaries/$*.xls)))
-	bin/sheetstack --groups $(sheets) --group-name year --rm-lines 4 summaries/$*.xls > $@
+.PHONY: summary
+summary: $(SUMMARYFILES)
+
+summaries/%.csv: summaries/%.xls | summaries
+	$(eval sheets = $(subst Sales,,$(subst $(space)Sales$(space),$(comma),$(shell $(BIN)/j -l $^))))
+	$(BIN)/sheetstack --groups $(sheets) --group-name year --rm-lines 4 summaries/$*.xls | sed -Ee 's/ +("?),/\1,/g' > $@
+
+summaries/%.xls:
+	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > $@
 
 summaries/city: summaries ; mkdir -p summaries/city
 summaries: ; mkdir -p summaries
