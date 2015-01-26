@@ -27,7 +27,7 @@ space +=
 
 DATABASE = nycre
 
-PASS ?= ''
+PASS ?=
 
 .PHONY: all
 all: $(addsuffix -city.csv,$(addprefix sales/,$(YEARS)))
@@ -55,11 +55,12 @@ mysql: $(MYSQLPHONY) | mysqlcreate
 
 .PHONY: mysql-%
 mysql-%: sales/%-city.csv | mysqlcreate
-	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (borough,neighborhood,@category,taxclass,block,lot,easement,bldgclass,address,apt,zipcode,res_units,com_units,ttl_units,@land_sf,@gross_sf,yearbuilt,taxclass,@dummy,@price,@date) SET gross_sf=REPLACE(@gross_sf, ',', ''), land_sf=REPLACE(@land_sf, ',', ''), price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), bldgcatid=SUBSTRING_INDEX(@category, ' ', 1), date=STR_TO_DATE(@date, '%m/%d/%y')"
+
+	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) SET neighborhood=TRIM(@nabe), address=TRIM(@addr), gross_sf=REPLACE(@gross_sf, ',', ''), land_sf=REPLACE(@land_sf, ',', ''), price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), buildingclass=TRIM(@buildingclass), date=STR_TO_DATE(@date, '%m/%d/%y')"
 
 mysqlcreate: create-tables.sql
-	mysql -user="$(USER)" -p$(PASS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
-	mysql -user="$(USER)" -p$(PASS) --database=$(DATABASE) < $^
+	mysql --user="$(USER)" -p$(PASS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
+	mysql --user="$(USER)" -p$(PASS) --database=$(DATABASE) < $^
 
 sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } > $@

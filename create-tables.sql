@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `sales` (
 LOCK TABLES `borough` WRITE;
 /*!40000 ALTER TABLE `borough` DISABLE KEYS */;
 
-INSERT INTO `borough` (`id`, `borough`)
+INSERT INTO `borough` (`id`, `name`)
 VALUES
     (1,'Manhattan'),
     (2,'Bronx'),
@@ -51,10 +51,10 @@ VALUES
 /*!40000 ALTER TABLE `borough` ENABLE KEYS */;
 UNLOCK TABLES;
 
-LOCK TABLES `building_category` WRITE;
-/*!40000 ALTER TABLE `building_category` DISABLE KEYS */;
+LOCK TABLES `building_class_category` WRITE;
+/*!40000 ALTER TABLE `building_class_category` DISABLE KEYS */;
 
-INSERT INTO `building_category` (`id`, `category`)
+INSERT INTO `building_class_category` (`id`, `name`)
 VALUES
     ('01','ONE FAMILY HOMES'),
     ('02','TWO FAMILY HOMES'),
@@ -96,6 +96,6 @@ VALUES
     ('23','LOFT BUILDINGS'),
     ('24','TAX CLASS 4 - UTILITY BUREAU PROPERTIES');
 
-/*!40000 ALTER TABLE `building_category` ENABLE KEYS */;
+/*!40000 ALTER TABLE `building_class_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
