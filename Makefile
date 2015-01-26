@@ -16,10 +16,6 @@ BOROUGHS = manhattan bronx brooklyn queens statenisland
 
 BOROUGHCSV = $(addsuffix .csv,$(BOROUGHS))
 
-SALESFILES := $(addprefix sales/,$(addsuffix .csv,$(YEARS)))
-
-SALESBOROUGHCSV := $(addprefix sales/,$(foreach y,$(YEARS),$(addprefix $(y)/,$(BOROUGHCSV))))
-SALESBOROUGHXLS := $(addprefix sales/,$(foreach y,$(YEARS),$(addprefix $(y)/,$(addsuffix .xls,$(BOROUGHS)))))
 
 SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
@@ -50,9 +46,8 @@ rolling/raw/borough/%.xls: | rolling/raw/borough
 sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } > $@
 
-.INTERMEDIATE: sales/%.csv
 sales/%.csv: sales/%.xls | sales
-	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | grep -v -e '^$$' -v -e '^,\+$$' -v -e "^\",\"" -v -e '^\"$$' > $@
+	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | grep -v -e '^$$' -v -e '^,\+$$' > $@
 
 sales/%.xls: | sales
 	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
