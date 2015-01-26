@@ -14,6 +14,14 @@ CREATE TABLE `building_class_category` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `building_class`;
+
+CREATE TABLE `building_class` (
+  `id` varchar(3) NOT NULL DEFAULT '',
+  `name` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 DROP TABLE IF EXISTS sales;
 
 CREATE TABLE `sales` (
@@ -104,3 +112,12 @@ VALUES
 /*!40000 ALTER TABLE `building_class_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
+LOCK TABLES `building_class` WRITE;
+/*!40000 ALTER TABLE `building_class` DISABLE KEYS */;
+
+LOAD DATA LOCAL INFILE 'building-class.csv' INTO TABLE `building_class`
+  FIELDS TERMINATED BY ','
+  (id,name);
+
+/*!40000 ALTER TABLE `building_class` ENABLE KEYS */;
+UNLOCK TABLES;
