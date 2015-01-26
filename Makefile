@@ -48,12 +48,11 @@ rolling/raw/borough/%.xls: | rolling/raw/borough
 	curl "$(call JSONTOOL,$(ROLLING),.$*)" > $@
 
 sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
-	@echo $(addprefix sales/%/,$(BOROUGHCSV))
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } > $@
 
 .INTERMEDIATE: sales/%.csv
 sales/%.csv: sales/%.xls | sales
-	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | grep -v -e '^$$' -v -e '^,\+$$' > $@
+	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | grep -v -e '^$$' -v -e '^,\+$$' -v -e "^\",\"" -v -e '^\"$$' > $@
 
 sales/%.xls: | sales
 	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
