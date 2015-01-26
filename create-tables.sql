@@ -1,41 +1,46 @@
-DROP TABLE `borough`;
+DROP TABLE IF EXISTS `borough`;
 
 CREATE TABLE `borough` (
   `id` int(1) unsigned NOT NULL AUTO_INCREMENT,
-  `borough` varchar(9) DEFAULT NULL,
+  `name` varchar(9) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
-DROP TABLE `building_category`;
+DROP TABLE IF EXISTS `building_class_category`;
 
-CREATE TABLE `building_category` (
+CREATE TABLE `building_class_category` (
   `id` varchar(3) NOT NULL DEFAULT '',
-  `category` varchar(128) NOT NULL
+  `name` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `sales` (
+DROP TABLE IF EXISTS sales;
+
+CREATE TABLE `sales` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `borough` enum('1','2','3','4','5') DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `address` varchar(256) DEFAULT NULL,
+  `apt` varchar(5) DEFAULT NULL,
+  `zip` int(5) unsigned zerofill DEFAULT NULL,
   `neighborhood` varchar(64) DEFAULT NULL,
-  `bldgcatid` varchar(3) DEFAULT NULL,
+  `buildingclasscat` varchar(3) DEFAULT NULL,
+  `buildingclass` varchar(3) DEFAULT NULL,
   `taxclass` varchar(3) DEFAULT NULL,
   `block` smallint(5) unsigned DEFAULT NULL,
   `lot` smallint(5) unsigned DEFAULT NULL,
-  `easement` binary(1) DEFAULT NULL,
-  `bldgclass` varchar(3) DEFAULT NULL,
-  `address` varchar(256) DEFAULT NULL,
-  `apt` varchar(5) DEFAULT NULL,
-  `zipcode` int(5) unsigned zerofill DEFAULT NULL,
-  `res_units` smallint(5) unsigned DEFAULT NULL,
-  `com_units` smallint(5) unsigned DEFAULT NULL,
-  `ttl_units` smallint(5) unsigned DEFAULT NULL,
+  `resunits` smallint(5) unsigned DEFAULT NULL,
+  `comunits` smallint(5) unsigned DEFAULT NULL,
+  `ttlunits` smallint(5) unsigned DEFAULT NULL,
   `land_sf` int(10) unsigned DEFAULT NULL,
   `gross_sf` int(10) unsigned DEFAULT NULL,
   `yearbuilt` smallint(4) unsigned DEFAULT NULL,
   `price` int(10) unsigned DEFAULT NULL,
-  `date` date DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=84185 DEFAULT CHARSET=utf8;
+  `easement` binary(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `price` (`price`),
+  KEY `BBL` (`borough`,`block`,`lot`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 LOCK TABLES `borough` WRITE;
 /*!40000 ALTER TABLE `borough` DISABLE KEYS */;
