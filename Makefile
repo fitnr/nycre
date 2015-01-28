@@ -39,6 +39,9 @@ rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(eval m = $(shell date -jf '%Y-%m' '$*' +'%-m'))
 	{ cat $(HEADER) ; grep $< -e '$(m)/[0-9][0-9]\?/$(y)' ; } > $@
 
+.PHONY: rolling
+rolling: rolling/raw/city.csv
+
 .INTERMEDIATE: rolling/raw/city.csv
 rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
 	{ cat $(HEADER) ; $(foreach csv,$(ROLLINGCSVFILES), tail -n+6 $(csv) ;) } > $@	
