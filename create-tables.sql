@@ -37,7 +37,7 @@ CREATE TABLE `sales` (
   `borough` enum('1','2','3','4','5') DEFAULT NULL,
   `date` date DEFAULT NULL,
   `address` varchar(256) DEFAULT NULL,
-  `apt` varchar(5) DEFAULT NULL,
+  `apt` varchar(8) DEFAULT NULL,
   `zip` int(5) unsigned zerofill DEFAULT NULL,
   `neighborhood` varchar(64) DEFAULT NULL,
   `buildingclasscat` varchar(3) DEFAULT NULL,

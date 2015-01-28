@@ -56,7 +56,17 @@ mysql: $(MYSQLPHONY) | mysqlcreate
 .PHONY: mysql-%
 mysql-%: sales/%-city.csv | mysqlcreate
 
-	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) SET neighborhood=TRIM(@nabe), address=TRIM(@addr), gross_sf=REPLACE(@gross_sf, ',', ''), land_sf=REPLACE(@land_sf, ',', ''), price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), buildingclass=TRIM(@buildingclass), date=STR_TO_DATE(@date, '%m/%d/%y')"
+	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales \
+	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
+	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) \
+	SET neighborhood=TRIM(@nabe), \
+	address=CASE WHEN @addr REGEXP '[, \.]{1,2}APT[# \.]{1,2}' = 1 THEN TRIM(TRIM(TRAILING '.' FROM TRIM(TRAILING ',' FROM TRIM(SUBSTRING_INDEX(@addr, 'APT', 1))))) ELSE TRIM(@addr) END, \
+	apt=CASE WHEN @addr REGEXP '[, \.]{1,2}APT[# \.]{1,2}' = 1 THEN TRIM(LEADING '#' FROM TRIM(LEADING FROM TRIM(LEADING '#' FROM TRIM(LEADING '.' FROM TRIM(TRIM('#' FROM SUBSTRING_INDEX(@addr, 'APT', -1))))))) ELSE @apt END, \
+	gross_sf=REPLACE(@gross_sf, ',', ''), \
+	land_sf=REPLACE(@land_sf, ',', ''), \
+	price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), \
+	buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), \
+	buildingclass=TRIM(@buildingclass), date=STR_TO_DATE(@date, '%m/%d/%y')"
 
 mysqlcreate: create-tables.sql
 	mysql --user="$(USER)" -p$(PASS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
