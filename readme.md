@@ -8,6 +8,10 @@ The NYC Department of Finance maintains two real estate data sets:
 * [Annualized Sales](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Files with sales records for each year.
 * [Summary Data](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Year-by-year summaries of average prices by neighborhood
 
+## Requirements
+
+* [NPM](http://nodejs.org/download/)
+
 ## Downloading
 
 The download tasks convert DOF's excel files to CSV, but don't do any cleaning or other processing.
