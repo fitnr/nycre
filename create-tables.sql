@@ -141,6 +141,7 @@ LOCK TABLES `building_class` WRITE;
 
 LOAD DATA LOCAL INFILE 'building-class.csv' INTO TABLE `building_class`
   FIELDS TERMINATED BY ','
+  OPTIONALLY ENCLOSED BY '"'
   IGNORE 1 LINES
   (id,name);
 
