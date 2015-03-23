@@ -29,7 +29,8 @@ DATABASE = nycre
 
 PASS ?=
 
-.PHONY: all
+.PHONY: all rolling mysql mysql-% summary clean mysqlclean install
+
 all: $(addsuffix -city.csv,$(addprefix sales/,$(YEARS)))
 
 # Create rolling files 
@@ -39,7 +40,6 @@ rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(eval m = $(shell date -jf '%Y-%m' '$*' +'%-m'))
 	{ cat $(HEADER) ; grep $< -e '$(m)/[0-9][0-9]\?/$(y)' ; } > $@
 
-.PHONY: rolling
 rolling: rolling/raw/city.csv
 
 .INTERMEDIATE: rolling/raw/city.csv
@@ -53,10 +53,8 @@ rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 rolling/raw/borough/%.xls: | rolling/raw/borough
 	curl "$(call JSONTOOL,$(ROLLING),.$*)" > $@
 
-.PHONY: mysql
 mysql: $(MYSQLPHONY) | mysqlcreate
 
-.PHONY: mysql-%
 mysql-%: sales/%-city.csv | mysqlcreate
 
 	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales \
@@ -89,7 +87,6 @@ sales/%.xls: | sales
 
 sales: ; mkdir -p $(addprefix sales/,$(YEARS))
 
-.PHONY: summary
 summary: $(SUMMARYFILES)
 
 summaries/%.csv: summaries/%.xls | summaries
@@ -104,15 +101,12 @@ summaries: ; mkdir -p summaries
 
 rolling/raw/borough: ; mkdir -p rolling/raw/borough
 
-.PHONY: clean
 clean:
 	rm -rf rolling summaries sales
 
-.PHONE: mysqlclean
 mysqlclean:
 	mysql --user="$(USER)" -p$(PASS) --execute "DROP DATABASE IF EXISTS nycre;"
 
-.PHONY: install
 install:
 	npm install
 	pip list | grep csvkit || pip install csvkit --user
