@@ -1,4 +1,11 @@
 {
+    "2014": {
+        "manhattan": "http://www1.nyc.gov/assets/finance/downloads/pdf/rolling_sales/annualized-sales/2014/2014_manhattan.xls",
+        "bronx": "http://www1.nyc.gov/assets/finance/downloads/pdf/rolling_sales/annualized-sales/2014/2014_bronx.xls",
+        "brooklyn": "http://www1.nyc.gov/assets/finance/downloads/pdf/rolling_sales/annualized-sales/2014/2014_brooklyn.xls",
+        "queens": "http://www1.nyc.gov/assets/finance/downloads/pdf/rolling_sales/annualized-sales/2014/2014_queens.xls",
+        "statenisland": "http://www1.nyc.gov/assets/finance/downloads/pdf/rolling_sales/annualized-sales/2014/2014_statenisland.xls"
+    },
     "2013": {
         "manhattan": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2013/2013_manhattan.xls",
         "bronx": "http://www.nyc.gov/html/dof/downloads/pdf/rolling_sales/annualized%20sales/2013/2013_bronx.xls",
