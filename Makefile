@@ -34,7 +34,9 @@ all: $(addsuffix -city.csv,$(addprefix sales/,$(YEARS)))
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(eval y = $(shell date -jf '%Y-%m' '$*' +'%y'))
 	$(eval m = $(shell date -jf '%Y-%m' '$*' +'%-m'))
-	{ cat $(HEADER) ; grep $< -e '$(m)/[0-9][0-9]\?/$(y)' ; } > $@
+
+	$(CSVGREP) -c 'SALE DATE' -r '$(m)/\d\d?/$(y)' $< | \
+	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
 
 rolling: rolling/raw/city.csv
 
