@@ -11,8 +11,18 @@ The NYC Department of Finance maintains two real estate data sets:
 ## Requirements
 
 * [NPM](http://nodejs.org/download/)
+* [csvkit](https://github.com/onyxfish/csvkit)
 
-## Downloading
+Yes, it's annoying to require both Javascript and Python packages but csvkit is super-useful.
+
+## Installing
+
+```
+$ git clone git@github.com:fitnr/nycre.git
+$ make install
+```
+
+## Downloading data
 
 The download tasks convert DOF's excel files to CSV, but don't do any cleaning or other processing.
 
@@ -21,7 +31,6 @@ The download tasks convert DOF's excel files to CSV, but don't do any cleaning o
 To download all the annual sales data, download or clone the repository and run:
 
 ````
-$ make install
 $ make
 ````
 

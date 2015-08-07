@@ -1,4 +1,6 @@
 BIN = node_modules/.bin
+CSVSORT = csvsort
+CSVGREP = csvgrep
 
 SALES = json/sales.json
 
@@ -7,8 +9,6 @@ SUMMARIES = json/summaries.json
 ROLLING = json/rolling.json
 
 HEADER = header.txt
-
-JSONTOOL = $(shell $(BIN)/json $(2) --array < $(1))
 
 YEARS = $(shell $(BIN)/json --keys --array < $(SALES))
 
@@ -20,10 +20,6 @@ MYSQLPHONY := $(addprefix mysql-,$(YEARS))
 SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
 ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
-
-comma = ,
-space :=
-space +=
 
 DATABASE = nycre
 
@@ -50,14 +46,14 @@ rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
 rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 	$(BIN)/j -f $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
 
-rolling/raw/borough/%.xls: | rolling/raw/borough
-	curl "$(call JSONTOOL,$(ROLLING),.$*)" > $@
+rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
+	$(BIN)/json .$* --array -f $< | \
+	xargs curl > $@
 
 mysql: $(MYSQLPHONY) | mysqlcreate
 
 mysql-%: sales/%-city.csv | mysqlcreate
-
-	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$^' INTO TABLE sales \
+	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
 	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) \
 	SET neighborhood=TRIM(@nabe), \
@@ -67,37 +63,47 @@ mysql-%: sales/%-city.csv | mysqlcreate
 	land_sf=REPLACE(@land_sf, ',', ''), \
 	price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), \
 	buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), \
-	buildingclass=TRIM(@buildingclass), date=STR_TO_DATE(@date, '%m/%d/%y')"
+	buildingclass=TRIM(@buildingclass), \
+	date=STR_TO_DATE(@date, '%Y-%m-%d')"
 
 mysqlcreate: create-tables.sql
 	mysql --user="$(USER)" -p$(PASS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
 	mysql --user="$(USER)" -p$(PASS) --database=$(DATABASE) < $^
 
 sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
-	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } > $@
+	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } | \
+	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
 
-sales/%.csv: sales/%.xls | sales
-	$(BIN)/j -f $^ | sed -Ee 's/ +("?),/\1,/g' | awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | grep -v -e '^$$' -v -e '^,\+$$' > $@
+# sed: removes whitespace
+# awk: removes unnec quotes
+# grep: removes blank lines
+sales/%.csv: sales/%.xls
+	$(BIN)/j -f $^ | \
+	sed -Ee 's/ +("?),/\1,/g' | \
+	awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
+	grep -v -e '^$$' -v -e '^,\+$$' > $@
 
-sales/%.xls: | sales
+sales/%.xls: $(SALES)
+	@mkdir -p $(@D)
 	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
 	$(eval year = $(shell echo $* | sed 's|/[a-z]*||'))
 
-	curl "$(call JSONTOOL,$(SALES),.$(year).$(borough))" > $@
-
-sales: ; mkdir -p $(addprefix sales/,$(YEARS))
+	$(BIN)/json -f $< .$(year).$(borough) --array | \
+	xargs curl > $@
 
 summary: $(SUMMARYFILES)
 
 summaries/%.csv: summaries/%.xls | summaries
-	$(eval sheets = $(subst Sales,,$(subst $(space)Sales$(space),$(comma),$(shell $(BIN)/j -l $^))))
-	$(BIN)/sheetstack --groups $(sheets) --group-name year --rm-lines 4 summaries/$*.xls | sed -Ee 's/ +("?),/\1,/g' > $@
+	$(BIN)/j -l $^ | xargs | \
+	sed 's/ Sales//g' | sed 's/[[:space:]]/,/g' | \
+	xargs -I{} $(BIN)/sheetstack --groups {} --group-name year --rm-lines 4 $<| \
+	sed -Ee 's/ +("?),/\1,/g' > $@
 
-summaries/%.xls:
-	curl "$(call JSONTOOL,$(SUMMARIES),.$*)" > $@
+summaries/%.xls: $(SUMMARIES)
+	$(BIN)/json -f $< .$* | \
+	xargs curl > $@
 
-summaries/city: summaries ; mkdir -p summaries/city
-summaries: ; mkdir -p summaries
+summaries: ; mkdir -p $@
 
 rolling/raw/borough: ; mkdir -p rolling/raw/borough
 
