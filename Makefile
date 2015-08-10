@@ -1,6 +1,7 @@
 BIN = node_modules/.bin
 CSVSORT = csvsort
 CSVGREP = csvgrep
+MYSQL := mysql --user="$(USER)" -p$(PASS)
 
 SALES = json/sales.json
 
@@ -79,7 +80,7 @@ rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 mysql: $(MYSQLPHONY) | mysqlcreate
 
 mysql-%: sales/%-city.csv | mysqlcreate
-	mysql --user="$(USER)" -p$(PASS) --database="$(DATABASE)" --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE sales \
+	$(MYSQL) --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
 	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) \
 	SET neighborhood=TRIM(@nabe), \
@@ -93,8 +94,8 @@ mysql-%: sales/%-city.csv | mysqlcreate
 	date=STR_TO_DATE(@date, '%Y-%m-%d')"
 
 mysqlcreate: create-tables.sql
-	mysql --user="$(USER)" -p$(PASS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
-	mysql --user="$(USER)" -p$(PASS) --database=$(DATABASE) < $^
+	$(MYSQL) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
+	$(MYSQL) --database='$(DATABASE)' < $^
 
 sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } | \
@@ -137,7 +138,7 @@ clean:
 	rm -rf rolling summaries sales
 
 mysqlclean:
-	mysql --user="$(USER)" -p$(PASS) --execute "DROP DATABASE IF EXISTS nycre;"
+	$(MYSQL) --execute "DROP DATABASE IF EXISTS nycre;"
 
 install:
 	npm install
