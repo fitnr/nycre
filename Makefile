@@ -17,7 +17,6 @@ BOROUGHS = manhattan bronx brooklyn queens statenisland
 
 BOROUGHCSV = $(addsuffix .csv,$(BOROUGHS))
 
-MYSQLPHONY := $(addprefix mysql-,$(YEARS))
 SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
 ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
@@ -77,7 +76,7 @@ rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 	$(BIN)/json .$* --array -f $< | \
 	xargs curl > $@
 
-mysql: $(MYSQLPHONY) | mysqlcreate
+mysql: $(addprefix mysql-,$(YEARS)) | mysqlcreate
 
 mysql-%: sales/%-city.csv | mysqlcreate
 	$(MYSQL) --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
@@ -122,7 +121,7 @@ summary: $(SUMMARYFILES)
 
 summaries/%.csv: summaries/%.xls | summaries
 	$(BIN)/j -l $^ | xargs | \
-	sed 's/ Sales//g' | sed 's/[[:space:]]/,/g' | \
+	sed -e 's/ Sales//g' -e 's/[[:space:]]/,/g' | \
 	xargs -I{} $(BIN)/sheetstack --groups {} --group-name year --rm-lines 4 $<| \
 	sed -Ee 's/ +("?),/\1,/g' > $@
 
@@ -130,15 +129,11 @@ summaries/%.xls: $(SUMMARIES)
 	$(BIN)/json -f $< .$* | \
 	xargs curl > $@
 
-summaries: ; mkdir -p $@
+rolling/raw/borough summaries: ; mkdir -p $@
 
-rolling/raw/borough: ; mkdir -p rolling/raw/borough
+clean: ; rm -rf rolling summaries sales
 
-clean:
-	rm -rf rolling summaries sales
-
-mysqlclean:
-	$(MYSQL) --execute "DROP DATABASE IF EXISTS nycre;"
+mysqlclean: ; $(MYSQL) --execute "DROP DATABASE IF EXISTS nycre;"
 
 install:
 	npm install
