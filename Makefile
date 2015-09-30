@@ -51,7 +51,7 @@ CASE_APT = CASE \
 
 .PHONY: all rolling mysql mysql-% summary clean mysqlclean install
 
-all: $(addsuffix -city.csv,$(addprefix sales/,$(YEARS)))
+all: $(foreach y,$(YEARS),sales/$y-city.csv)
 
 # Create rolling files 
 # % should be YYYY-MM
@@ -94,23 +94,23 @@ mysqlcreate: create-tables.sql
 	$(MYSQL) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
 	$(MYSQL) --database='$(DATABASE)' < $^
 
-sales/%-city.csv: $(addprefix sales/%/,$(BOROUGHCSV)) | sales
+sales/%-city.csv: $(addprefix sales/raw/%/,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } | \
 	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
 
 # sed: removes whitespace
 # awk: removes unnec quotes
 # grep: removes blank lines
-sales/%.csv: sales/%.xls
+sales/raw/%.csv: sales/raw/%.xls
 	$(BIN)/j -f $^ | \
 	sed -Ee 's/ +("?),/\1,/g' | \
 	awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' > $@
 
-sales/%.xls: $(SALES)
+sales/raw/%.xls: $(SALES)
 	@mkdir -p $(@D)
 	BASE=$* ; \
-	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
+	$(BIN)/json -f $< .$${BASE%%/*}.$${BASE##*/} --array | \
 	xargs curl > $@
 
 summary: $(SUMMARYFILES)
@@ -125,7 +125,7 @@ summaries/%.xls: $(SUMMARIES)
 	$(BIN)/json -f $< .$* | \
 	xargs curl > $@
 
-rolling/raw/borough summaries: ; mkdir -p $@
+rolling/raw/borough summaries sales: ; mkdir -p $@
 
 clean: ; rm -rf rolling summaries sales
 
