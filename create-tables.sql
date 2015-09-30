@@ -4,7 +4,7 @@ CREATE TABLE `borough` (
   `id` int(1) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(9) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `building_class_category`;
 
@@ -59,7 +59,6 @@ CREATE TABLE `sales` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 LOCK TABLES `borough` WRITE;
-/*!40000 ALTER TABLE `borough` DISABLE KEYS */;
 
 INSERT INTO `borough` (`id`, `name`)
 VALUES
@@ -69,11 +68,9 @@ VALUES
     (4,'Queens'),
     (5,'Richmond');
 
-/*!40000 ALTER TABLE `borough` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `building_class_category` WRITE;
-/*!40000 ALTER TABLE `building_class_category` DISABLE KEYS */;
 
 INSERT INTO `building_class_category` (`id`, `name`)
 VALUES
@@ -117,11 +114,9 @@ VALUES
     ('23','LOFT BUILDINGS'),
     ('24','TAX CLASS 4 - UTILITY BUREAU PROPERTIES');
 
-/*!40000 ALTER TABLE `building_class_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `tax_class` WRITE;
-/*!40000 ALTER TABLE `tax_class` DISABLE KEYS */;
 
 INSERT INTO `tax_class` (`id`, `name`)
 VALUES
@@ -133,11 +128,9 @@ VALUES
     (3,'utility'),
     (4,'commercial or industrial');
 
-/*!40000 ALTER TABLE `tax_class` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `building_class` WRITE;
-/*!40000 ALTER TABLE `building_class` DISABLE KEYS */;
 
 LOAD DATA LOCAL INFILE 'building-class.csv' INTO TABLE `building_class`
   FIELDS TERMINATED BY ','
@@ -145,5 +138,4 @@ LOAD DATA LOCAL INFILE 'building-class.csv' INTO TABLE `building_class`
   IGNORE 1 LINES
   (id,name);
 
-/*!40000 ALTER TABLE `building_class` ENABLE KEYS */;
 UNLOCK TABLES;
