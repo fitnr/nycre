@@ -1,0 +1,18 @@
+os:
+ - linux
+ - osx
+
+env:
+ - DB=mysql
+
+install:
+ - PATH=$PATH:~/Library/Python/2.7/bin
+ - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew update > /dev/null; fi
+ - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew install mysql && mysql.server start; fi
+ - make install
+
+script:
+ - make sales/200{3,4}-city.csv
+ - make --silent sales/20{05,06,07,08,09,10,11,12,13,14}-city.csv
+ - make --silent $DB USER=root PASSFLAG=
+ - make summary rolling

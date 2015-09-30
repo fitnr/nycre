@@ -58,8 +58,6 @@ CREATE TABLE `sales` (
   KEY `BBL` (`borough`,`block`,`lot`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-LOCK TABLES `borough` WRITE;
-
 INSERT INTO `borough` (`id`, `name`)
 VALUES
     (1,'Manhattan'),
@@ -67,10 +65,6 @@ VALUES
     (3,'Brooklyn'),
     (4,'Queens'),
     (5,'Richmond');
-
-UNLOCK TABLES;
-
-LOCK TABLES `building_class_category` WRITE;
 
 INSERT INTO `building_class_category` (`id`, `name`)
 VALUES
@@ -114,10 +108,6 @@ VALUES
     ('23','LOFT BUILDINGS'),
     ('24','TAX CLASS 4 - UTILITY BUREAU PROPERTIES');
 
-UNLOCK TABLES;
-
-LOCK TABLES `tax_class` WRITE;
-
 INSERT INTO `tax_class` (`id`, `name`)
 VALUES
     (1,'residential up to 3 units, condos under three stories'),
@@ -127,15 +117,3 @@ VALUES
     (2,'residential, 11 units or more'),
     (3,'utility'),
     (4,'commercial or industrial');
-
-UNLOCK TABLES;
-
-LOCK TABLES `building_class` WRITE;
-
-LOAD DATA LOCAL INFILE 'building-class.csv' INTO TABLE `building_class`
-  FIELDS TERMINATED BY ','
-  OPTIONALLY ENCLOSED BY '"'
-  IGNORE 1 LINES
-  (id,name);
-
-UNLOCK TABLES;

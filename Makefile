@@ -1,7 +1,7 @@
 BIN = node_modules/.bin
 CSVSORT = csvsort
 CSVGREP = csvgrep
-MYSQL := mysql --user="$(USER)" -p$(PASS)
+MYSQL = mysql --user="$(USER)" $(PASSFLAG)$(PASS)
 
 SALES = json/sales.json
 
@@ -23,6 +23,7 @@ ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
 
 DATABASE = nycre
 
+PASSFLAG = -p
 PASS ?=
 
 CASE_ADDR = CASE \
@@ -77,7 +78,7 @@ rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 mysql: $(addprefix mysql-,$(YEARS)) | mysqlcreate
 
 mysql-%: sales/%-city.csv | mysqlcreate
-	$(MYSQL) --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
+	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
 	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) \
 	SET neighborhood=TRIM(@nabe), \
@@ -90,9 +91,11 @@ mysql-%: sales/%-city.csv | mysqlcreate
 	buildingclass=TRIM(@buildingclass), \
 	date=STR_TO_DATE(@date, '%Y-%m-%d')"
 
-mysqlcreate: create-tables.sql
+mysqlcreate: sql/mysql-create-tables.sql building-class.csv
 	$(MYSQL) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
-	$(MYSQL) --database='$(DATABASE)' < $^
+	$(MYSQL) --database='$(DATABASE)' < $<
+	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$(lastword $^)' INTO TABLE $(DATABASE).building_class \
+  	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
 
 sales/%-city.csv: $(addprefix sales/raw/%/,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } | \
