@@ -56,10 +56,8 @@ all: $(addsuffix -city.csv,$(addprefix sales/,$(YEARS)))
 # Create rolling files 
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
-	$(eval y = $(shell date -jf '%Y-%m' '$*' +'%y'))
-	$(eval m = $(shell date -jf '%Y-%m' '$*' +'%-m'))
-
-	$(CSVGREP) -c 'SALE DATE' -r '$(m)/\d\d?/$(y)' $< | \
+	DATE=$* ; YYYY=$${DATE%-*} ; YY=$${YYYY#20} ; MM=$${DATE#*-} ; M=$${MM#0} ; \
+	$(CSVGREP) -c 'SALE DATE' -r "$$M/\d{1,2}/$$YY" $< | \
 	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
 
 rolling: rolling/raw/city.csv
@@ -111,10 +109,8 @@ sales/%.csv: sales/%.xls
 
 sales/%.xls: $(SALES)
 	@mkdir -p $(@D)
-	$(eval borough = $(shell echo $* | sed 's|[0-9]\{4\}/||'))
-	$(eval year = $(shell echo $* | sed 's|/[a-z]*||'))
-
-	$(BIN)/json -f $< .$(year).$(borough) --array | \
+	BASE=$* ; \
+	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
 	xargs curl > $@
 
 summary: $(SUMMARYFILES)
