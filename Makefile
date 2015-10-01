@@ -68,11 +68,11 @@ rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
 
 .INTERMEDIATE: rolling/raw/borough/%.csv
 rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
-	$(BIN)/j -f $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
+	$(BIN)/j --quiet --file $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
 
 rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 	$(BIN)/json .$* --array -f $< | \
-	xargs curl > $@
+	xargs curl --silent > $@
 
 mysql: $(addprefix mysql-,$(YEARS)) | mysqlcreate
 
@@ -102,7 +102,7 @@ sales/%-city.csv: $(addprefix sales/raw/%/,$(BOROUGHCSV)) | sales
 # awk: removes unnec quotes
 # grep: removes blank lines
 sales/raw/%.csv: sales/raw/%.xls
-	$(BIN)/j -f $^ | \
+	$(BIN)/j --quiet --file $^ | \
 	sed -Ee 's/ +("?),/\1,/g' | \
 	awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' > $@
@@ -111,19 +111,19 @@ sales/raw/%.xls: $(SALES)
 	@mkdir -p $(@D)
 	BASE=$* ; \
 	$(BIN)/json -f $< .$${BASE%%/*}.$${BASE##*/} --array | \
-	xargs curl > $@
+	xargs curl --silent > $@
 
 summary: $(SUMMARYFILES)
 
 summaries/%.csv: summaries/%.xls | summaries
-	$(BIN)/j -l $^ | xargs | \
+	$(BIN)/j --quiet --list-sheets $^ | xargs | \
 	sed -e 's/ Sales//g' -e 's/[[:space:]]/,/g' | \
 	xargs -I{} $(BIN)/sheetstack --groups {} --group-name year --rm-lines 4 $<| \
 	sed -Ee 's/ +("?),/\1,/g' > $@
 
 summaries/%.xls: $(SUMMARIES)
 	$(BIN)/json -f $< .$* | \
-	xargs curl > $@
+	xargs curl --silent > $@
 
 rolling/raw/borough summaries sales: ; mkdir -p $@
 
