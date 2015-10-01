@@ -3,7 +3,8 @@ os:
  - osx
 
 env:
- - DB=mysql
+  - DB=mysql
+  - DB=sqlite
 
 install:
  - export PATH=$PATH:~/Library/Python/2.7/bin
@@ -23,7 +24,7 @@ script:
  - make USER=root PASSFLAG= select-$DB
  - make summary
  - make rolling
-
 matrix:
   allow_failures:
     - os: osx
+    - env: DB=sqlite
