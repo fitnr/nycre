@@ -1,11 +1,11 @@
 {
   "name": "nycre",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Download and pre-process New York City real estate sales data",
   "repository": "https://github.com/fitnr/nycre",
   "dependencies": {
     "j": "^0.4.3",
-    "jsontool": "^7.0.2",
+    "json": "^9.0.3",
     "sheetstack": "^0.1.0"
   },
   "author": "Neil Freeman",
