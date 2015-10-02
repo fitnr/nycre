@@ -11,7 +11,9 @@ ROLLING = json/rolling.json
 
 HEADER = header.txt
 
-YEARS = $(shell $(BIN)/json --keys --array < $(SALES))
+YEARS := 2003 2004 2005 \
+	2006 2007 2008 2009 2010 \
+	2011 2012 2013 2014
 
 BOROUGHS = manhattan bronx brooklyn queens statenisland
 
@@ -22,6 +24,8 @@ SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
 
 DATABASE = nycre
+
+CURLFLAGS = --progress-bar
 
 PASSFLAG = -p
 PASS ?=
@@ -73,23 +77,24 @@ rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 
 rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 	$(BIN)/json .$* --array -f $< | \
-	xargs curl --silent > $@
+	xargs curl $(CURLFLAGS) > $@
 
-mysql: $(addprefix mysql-,$(YEARS)) | mysqlcreate
+mysql: $(addprefix mysql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | mysqlcreate
 
-mysql-%: sales/%-city.csv | mysqlcreate
+mysql-%: sales/raw/%.csv | mysqlcreate
 	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
-	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,taxclass,@buildingclass,@price,@date) \
+	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,@taxclass,@buildingclass,@price,@date) \
 	SET neighborhood=TRIM(@nabe), \
 	address=$(CASE_ADDR), \
 	apt=$(CASE_APT), \
 	gross_sf=REPLACE(@gross_sf, ',', ''), \
 	land_sf=REPLACE(@land_sf, ',', ''), \
+	taxclass=TRIM(@taxclass), \
 	price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), \
 	buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), \
 	buildingclass=TRIM(@buildingclass), \
-	date=STR_TO_DATE(@date, '%Y-%m-%d')"
+	date=STR_TO_DATE(@date, '%m/%d/%y')"
 
 mysqlcreate: sql/mysql-create-tables.sql building-class.csv
 	$(MYSQL) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
@@ -97,9 +102,8 @@ mysqlcreate: sql/mysql-create-tables.sql building-class.csv
 	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$(lastword $^)' INTO TABLE $(DATABASE).building_class \
   	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
 
-sales/%-city.csv: $(addprefix sales/raw/%/,$(BOROUGHCSV)) | sales
-	{ cat $(HEADER) ; $(foreach file,$^,tail -n+6 $(file) ;) } | \
-	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
+sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
+	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
 
 # sed: removes whitespace
 # awk: removes unnec quotes
@@ -108,13 +112,13 @@ sales/raw/%.csv: sales/raw/%.xls
 	$(BIN)/j --quiet --file $^ | \
 	sed -Ee 's/ +("?),/\1,/g' | \
 	awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
-	grep -v -e '^$$' -v -e '^,\+$$' > $@
+	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
+	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
-sales/raw/%.xls: $(SALES)
-	@mkdir -p $(@D)
+sales/raw/%.xls: $(SALES) | sales/raw
 	BASE=$* ; \
-	$(BIN)/json -f $< .$${BASE%%/*}.$${BASE##*/} --array | \
-	xargs curl --silent > $@
+	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
+	xargs curl $(CURLFLAGS) > $@
 
 summary: $(SUMMARYFILES)
 
@@ -126,9 +130,9 @@ summaries/%.csv: summaries/%.xls | summaries
 
 summaries/%.xls: $(SUMMARIES)
 	$(BIN)/json -f $< .$* | \
-	xargs curl --silent > $@
+	xargs curl $(CURLFLAGS) > $@
 
-rolling/raw/borough summaries sales: ; mkdir -p $@
+rolling/raw/borough summaries sales sales/raw: ; mkdir -p $@
 
 clean: ; rm -rf rolling summaries sales
 

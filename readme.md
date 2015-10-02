@@ -68,7 +68,7 @@ Load sales data into a MySQL database:
 $ make mysql USER=username PASS=password
 ````
 
-(You can leave off the password, you'll be prompted several times to enter it.)
+You can leave off the password, you'll be prompted several times to enter it. If your account doesn't have a password, I judge your security practices, but you can run: `make mysql USER=username PASSFLAG=`.
 
 This will try to connect to `localhost` and create a database named `nycre`. You can customize the database name like so:
 
