@@ -6,13 +6,24 @@ env:
  - DB=mysql
 
 install:
- - PATH=$PATH:~/Library/Python/2.7/bin
+ - export PATH=$PATH:~/Library/Python/2.7/bin
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew update > /dev/null; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew install mysql && mysql.server start; fi
  - make install
 
+# Broken up like this because travis chokes on the long delete list
+# The --silent flags are because travis's on the huge log
+# Touch some of the targets because all the downloading is boring
 script:
- - make sales/200{3,4}-city.csv
- - make --silent sales/20{05,06,07,08,09,10,11,12,13,14}-city.csv
- - make --silent $DB USER=root PASSFLAG=
- - make summary rolling
+ - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,queens,statenisland}.xls
+ - touch sales/raw/20{03,05,06,07,09,10,11,13,14}-{bronx,brooklyn,manhattan,statenisland,queens}.{xls,csv}
+ - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
+ - make --silent $DB USER=root PASSFLAG= YEARS="2004 2008 2012"
+ - make YEARS="2004 2008 2012"
+ - make USER=root PASSFLAG= select-$DB
+ - make summary
+ - make rolling
+
+matrix:
+  allow_failures:
+    - os: osx

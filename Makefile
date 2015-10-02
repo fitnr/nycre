@@ -54,7 +54,7 @@ CASE_APT = CASE \
 		THEN TRIM(SUBSTRING_INDEX(@addr, ', ', -1)) \
 	ELSE @apt END
 
-.PHONY: all rolling mysql mysql-% summary clean mysqlclean install
+.PHONY: all rolling mysql mysql-% summary clean mysqlclean install select-%
 
 all: $(foreach y,$(YEARS),sales/$y-city.csv)
 
@@ -135,6 +135,14 @@ summaries/%.xls: $(SUMMARIES)
 rolling/raw/borough summaries sales sales/raw: ; mkdir -p $@
 
 clean: ; rm -rf rolling summaries sales
+
+# Dummy tasks for testing
+select-mysql:
+	$(MYSQL) $(DATABASE) --execute "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(MYSQL) $(DATABASE) --execute "select r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
+		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
+		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
 mysqlclean: ; $(MYSQL) --execute "DROP DATABASE IF EXISTS nycre;"
 
