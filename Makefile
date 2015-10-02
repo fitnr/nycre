@@ -191,7 +191,6 @@ sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
 sales/raw/%.csv: sales/raw/%.xls
 	$(BIN)/j --quiet --file $^ | \
 	sed -Ee 's/ +("?),/\1,/g' | \
-	awk '/([",]{1,3}[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
 	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
