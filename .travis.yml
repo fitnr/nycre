@@ -19,7 +19,9 @@ script:
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - touch sales/raw/20{03,05,06,07,09,10,11,13,14}-{bronx,brooklyn,manhattan,statenisland,queens}.{xls,csv}
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
- - make --silent $DB USER=root PASSFLAG= YEARS="2004 2008 2012"
+ - make $DB USER=root PASSFLAG= YEARS=2004
+ - make $DB USER=root PASSFLAG= YEARS=2008
+ - make $DB USER=root PASSFLAG= YEARS=2012
  - make YEARS="2004 2008 2012"
  - make USER=root PASSFLAG= select-$DB
  - make summary
