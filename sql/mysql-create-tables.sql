@@ -30,9 +30,8 @@ CREATE TABLE `tax_class` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS sales;
-
-CREATE TABLE `sales` (
+-- Not dropping the sales table because you might have stuff if it!
+CREATE TABLE IF NOT EXISTS `sales` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `borough` enum('1','2','3','4','5') DEFAULT NULL,
   `date` date DEFAULT NULL,
