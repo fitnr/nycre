@@ -123,6 +123,21 @@ MYSQL_CASE_APT = CASE \
 		THEN TRIM(SUBSTRING_INDEX(@addr, ', ', -1)) \
 	ELSE @apt END
 
+MYSQL_INSERT = (borough, @nabe, @category, @dummy_tax_class, \
+	block, lot, easement, @dummy_bldg_class, @addr, @apt, zip, \
+	resunits, comunits, ttlunits, @land_sf, @gross_sf, yearbuilt, \
+	@taxclass, @buildingclass, @price, @date) \
+	SET neighborhood=TRIM(@nabe), \
+	address=$(MYSQL_CASE_ADDR), \
+	apt=$(MYSQL_CASE_APT), \
+	gross_sf=REPLACE(@gross_sf, ',', ''), \
+	land_sf=REPLACE(@land_sf, ',', ''), \
+	taxclass=TRIM(@taxclass), \
+	price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), \
+	buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), \
+	buildingclass=TRIM(@buildingclass), \
+	date=STR_TO_DATE(@date, '%m/%d/%y')
+
 .PHONY: all rolling mysql mysql-% sqlite sqlite-% summary clean mysqlclean install select-%
 
 all: $(foreach y,$(YEARS),sales/$y-city.csv)
@@ -151,36 +166,26 @@ rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 mysql: $(addprefix mysql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | mysqlcreate
 
 mysql-%: sales/raw/%.csv | mysqlcreate
-	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
+	$(MYSQL) $(MYSQLFLAGS) --local-infile --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
-	(borough,@nabe,@category,@dummy_tax_class,block,lot,easement,@dummy_bldg_class,@addr,@apt,zip,resunits,comunits,ttlunits,@land_sf,@gross_sf,yearbuilt,@taxclass,@buildingclass,@price,@date) \
-	SET neighborhood=TRIM(@nabe), \
-	address=$(MYSQL_CASE_ADDR), \
-	apt=$(MYSQL_CASE_APT), \
-	gross_sf=REPLACE(@gross_sf, ',', ''), \
-	land_sf=REPLACE(@land_sf, ',', ''), \
-	taxclass=TRIM(@taxclass), \
-	price=REPLACE(REPLACE(@price, '$$', ''), ',', ''), \
-	buildingclasscat=SUBSTRING_INDEX(@category, ' ', 1), \
-	buildingclass=TRIM(@buildingclass), \
-	date=STR_TO_DATE(@date, '%m/%d/%y')"
+	$(MYSQL_INSERT);"
 
 mysqlcreate: sql/mysql-create-tables.sql building-class.csv
-	$(MYSQL) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
-	$(MYSQL) --database='$(DATABASE)' < $<
-	$(MYSQL) --local-infile --execute="LOAD DATA LOCAL INFILE '$(lastword $^)' INTO TABLE $(DATABASE).building_class \
+	$(MYSQL) $(MYSQLFLAGS) --execute="CREATE DATABASE IF NOT EXISTS $(DATABASE)"
+	$(MYSQL) $(MYSQLFLAGS) --database='$(DATABASE)' < $<
+	$(MYSQL) $(MYSQLFLAGS) --local-infile --execute="LOAD DATA LOCAL INFILE '$(lastword $^)' INTO TABLE $(DATABASE).building_class \
   	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
 
 sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | nycre.db
 
 sqlite-%: sales/raw/%.csv | nycre.db
-	$(SQLITE) -separator , $| '.import "$<" sales_tmp'
-	$(SQLITE) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) FROM sales_tmp WHERE BOROUGH != 'BOROUGH';"
-	$(SQLITE) $| "DELETE FROM sales_tmp"
+	$(SQLITE) $(SQLITEFLAGS) -separator , $| '.import "$<" sales_tmp'
+	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) FROM sales_tmp WHERE BOROUGH != 'BOROUGH';"
+	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
 
 $(DATABASE).db: sql/sqlite-create-tables.sql building-class.csv
-	$(SQLITE) $@ < $<
-	$(SQLITE) -separator , $@ '.import "building-class.csv" building_class'
+	$(SQLITE) $(SQLITEFLAGS) $@ < $<
+	$(SQLITE) $(SQLITEFLAGS) -separator , $@ '.import "building-class.csv" building_class'
 
 sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
@@ -217,15 +222,15 @@ clean: ; rm -rf rolling summaries sales
 
 # Dummy tasks for testing
 select-mysql:
-	$(MYSQL) $(DATABASE) --execute "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
-	$(MYSQL) $(DATABASE) --execute "select r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+	$(MYSQL) $(MYSQLFLAGS) $(DATABASE) --execute "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(MYSQL) $(MYSQLFLAGS) $(DATABASE) --execute "select r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
 select-sqlite: $(DATABASE).db
-	$(SQLITE) $< "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
-	$(SQLITE) $< "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+	$(SQLITE) $(SQLITEFLAGS) $< "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(SQLITE) $(SQLITEFLAGS) $< "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
