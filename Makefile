@@ -206,13 +206,13 @@ sales/raw/%.xls: $(SALES) | sales/raw
 
 summary: $(SUMMARYFILES)
 
-summaries/%.csv: summaries/%.xls | summaries
+summaries/%.csv: summaries/%.xls
 	$(BIN)/j --quiet --list-sheets $^ | xargs | \
 	sed -e 's/ Sales//g' -e 's/[[:space:]]/,/g' | \
 	xargs -I{} $(BIN)/sheetstack --groups {} --group-name year --rm-lines 4 $<| \
 	sed -Ee 's/ +("?),/\1,/g' > $@
 
-summaries/%.xls: $(SUMMARIES)
+summaries/%.xls: $(SUMMARIES) | summaries
 	$(BIN)/json -f $< .$* | \
 	xargs curl $(CURLFLAGS) > $@
 
