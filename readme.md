@@ -1,7 +1,7 @@
 nycre
 =====
 
-Download and pre-process New York City real estate sales data.
+Download and pre-process New York City real estate sales data, and load it into csv files, MySQL or SQLite.
 
 The NYC Department of Finance maintains two real estate data sets:
 * [Rolling Sales](http://www.nyc.gov/html/dof/html/property/rolling_sales_data.shtml): All sales for the last twelve months (usually running with a 2-3 month delay)
@@ -77,3 +77,11 @@ $ make mysql DATABASE=mydatabase
 ````
 
 Tables named `sales`, `borough`, `building_class_category`, `building_class` and `tax_class` will be created.
+
+## SQLite
+
+Requires SQLite v3.7.15 or higher.
+
+The command `make sqlite` downloads all available sales data (2003-) and loads it into an SQLite file named `nycre.db`.
+
+Due to the limitations of SQLite, addresses and apartment numbers are not as well parsed as in the MySQL commands.
