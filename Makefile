@@ -191,11 +191,12 @@ sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
 	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
 
 # sed: removes whitespace
-# awk: removes unnec quotes
+# awk: removes unnec line breaks in quotes
 # grep: removes blank lines
 sales/raw/%.csv: sales/raw/%.xls
 	$(BIN)/j --quiet --file $^ | \
 	sed -Ee 's/ +("?),/\1,/g' | \
+	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
 	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
