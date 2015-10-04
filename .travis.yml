@@ -10,6 +10,7 @@ sudo: true
 
 install:
  - export PATH=$PATH:~/Library/Python/2.7/bin
+ - if [[ $TRAVIS_OS_NAME == "linux" && $DB == "sqlite" ]]; then sudo apt-get -q install -y sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew update > /dev/null; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew install mysql && mysql.server start; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then brew install sqlite; fi
@@ -18,6 +19,7 @@ install:
  - make install
 
 before_script:
+ - which $sqlite3
  - $sqlite3 -version
 
 # Broken up like this because travis chokes on the long delete list
@@ -32,12 +34,10 @@ script:
  - make $SILENT $DB USER=root PASSFLAG= YEARS=2012 SQLITE=$sqlite3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
-
-after_success:
  - make USER=root PASSFLAG= select-$DB
 
 after_failure:
- - head -n 10 sales/raw/20{08,12}-{bronx,brooklyn,manhattan,queens,statenisland}.csv
+ - head -n 10 sales/raw/20{08,12}-{bronx,brooklyn,manhattan}.csv
 
 matrix:
   allow_failures:
