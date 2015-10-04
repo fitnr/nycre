@@ -10,17 +10,17 @@ sudo: true
 
 install:
  - export PATH=$PATH:~/Library/Python/2.7/bin
- - if [[ $TRAVIS_OS_NAME == "linux" && $DB == "sqlite" ]]; then sudo apt-get -q install -y sqlite3; fi
+ - if [[ $TRAVIS_OS_NAME == "linux" && $DB == "sqlite" ]]; then sudo apt-get -y autoremove sqlite3 && sudo apt-get -y install sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew update > /dev/null; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew install mysql && mysql.server start; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then brew install sqlite; fi
- - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then export sqlite3=/usr/local/opt/sqlite/bin/sqlite3; else export sqlite3=sqlite3; fi
+ - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then export SQLITE3=/usr/local/opt/sqlite/bin/sqlite3; else export SQLITE3=sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then export SILENT=--silent; fi
  - make install
 
 before_script:
- - which $sqlite3
- - $sqlite3 -version
+ - which $SQLITE3
+ - $SQLITE3 -version
 
 # Broken up like this because travis chokes on the long delete list
 # The --silent flags are because travis's on the huge log
@@ -30,8 +30,8 @@ script:
  - make -j2 sales/raw/2008-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 --silent sales/raw/2012-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
- - make $SILENT $DB USER=root PASSFLAG= YEARS=2008 SQLITE=$sqlite3
- - make $SILENT $DB USER=root PASSFLAG= YEARS=2012 SQLITE=$sqlite3
+ - make $SILENT $DB USER=root PASSFLAG= YEARS=2008 SQLITE=$SQLITE3
+ - make $SILENT $DB USER=root PASSFLAG= YEARS=2012 SQLITE=$SQLITE3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
  - make USER=root PASSFLAG= select-$DB
