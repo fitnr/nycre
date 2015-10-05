@@ -19,10 +19,10 @@ install:
  - make install
 
 before_script:
- - which $SQLITE3
- - $SQLITE3 -version
- - mysql --version
- - psql --version
+ - which $SQLITE3 || echo
+ - $SQLITE3 -version || echo
+ - mysql --version || echo
+ - psql --version || echo
 
 # Broken up like this because travis chokes on the long delete list
 # The --silent flags are because travis's on the huge log

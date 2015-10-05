@@ -276,7 +276,7 @@ psqlcreate: sql/psql-create-tables.sql building-class.csv
 
 	tail -n+2 $(lastword $^) | \
 	$(PSQL) --dbname=$(DATABASE) $(PSQLFLAGS) --command="COPY building_class(id, name) \
-	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
+	FROM stdin DELIMITER ',' CSV QUOTE '\"';" || :
 
 sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | nycre.db
 	$(SQLITE) $(SQLITEFLAGS) $| "DROP TABLE sales_tmp"
@@ -334,8 +334,8 @@ select-mysql:
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
 select-postgresql:
-	$(PSQL) $(DATABASE) $(PSQLFLAGS) --set ON_ERROR_STOP=on -c "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
-	$(PSQL) $(DATABASE) $(PSQLFLAGS) --set ON_ERROR_STOP=on -c "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --set ON_ERROR_STOP=on -c "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --set ON_ERROR_STOP=on -c "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
