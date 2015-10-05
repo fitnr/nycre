@@ -7,11 +7,8 @@ env:
   - DB=sqlite
   - DB=postgresql
 
-sudo: true
-
 install:
  - export PATH=$PATH:~/Library/Python/2.7/bin
- - if [[ $TRAVIS_OS_NAME == "linux" && $DB == "sqlite" ]]; then sudo apt-get -y autoremove sqlite3 && sudo apt-get -y install sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew update > /dev/null; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "mysql" ]]; then brew install mysql && mysql.server start; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then brew install sqlite; fi
@@ -53,3 +50,6 @@ matrix:
     -
         env: DB=postgresql
         os: osx
+    -
+        env: DB=sqlite
+        os: linux
