@@ -290,24 +290,6 @@ $(DATABASE).db: sql/sqlite-create-tables.sql building-class.csv
 	$(SQLITE) $(SQLITEFLAGS) $@ < $<
 	$(SQLITE) $(SQLITEFLAGS) -separator , $@ '.import "building-class.csv" building_class'
 
-sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
-	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
-
-# sed: removes whitespace
-# awk: removes unnec line breaks in quotes
-# grep: removes blank lines
-sales/raw/%.csv: sales/raw/%.xls
-	$(BIN)/j --quiet --file $^ | \
-	sed -Ee 's/ +("?),/\1,/g' | \
-	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
-	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
-	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
-
-sales/raw/%.xls: $(SALES) | sales/raw
-	BASE=$* ; \
-	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
-	xargs curl $(CURLFLAGS) > $@
-
 summary: $(SUMMARYFILES)
 
 summaries/%.csv: summaries/%.xls
@@ -319,6 +301,25 @@ summaries/%.csv: summaries/%.xls
 summaries/%.xls: $(SUMMARIES) | summaries
 	$(BIN)/json -f $< .$* | \
 	xargs curl $(CURLFLAGS) > $@
+
+sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
+	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
+
+sales/raw/%.xls: $(SALES) | sales/raw
+	BASE=$* ; \
+	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
+	xargs curl $(CURLFLAGS) > $@
+
+.SECONDARY:
+# sed: removes whitespace
+# awk: removes unnec line breaks in quotes
+# grep: removes blank lines
+sales/raw/%.csv: sales/raw/%.xls
+	$(BIN)/j --quiet --file $^ | \
+	sed -Ee 's/ +("?),/\1,/g' | \
+	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
+	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
+	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
 rolling/raw/borough summaries sales sales/raw: ; mkdir -p $@
 
