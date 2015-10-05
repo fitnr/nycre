@@ -34,72 +34,72 @@ PASSFLAG = -p
 PASS ?=
 
 SQLITE_CASE_ADDR = CASE \
-    WHEN INSTR(ADDRESS, ' UNIT') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ' UNIT'))) \
-    WHEN INSTR(ADDRESS, ', UNIT') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ', UNIT'))) \
-    WHEN INSTR(ADDRESS, ', APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ', APT.'))) \
-    WHEN INSTR(ADDRESS, ', APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ', APT'))) \
-    WHEN INSTR(ADDRESS, ',APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ',APT'))) \
-    WHEN INSTR(ADDRESS, '.APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, '.APT'))) \
-    WHEN INSTR(ADDRESS, '. APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, '. APT.'))) \
-    WHEN INSTR(ADDRESS, ' APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ' APT.'))) \
-    WHEN INSTR(ADDRESS , ', \#') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ', \#'))) \
-    WHEN INSTR(ADDRESS , ' \#') THEN \
-        TRIM(SUBSTR(ADDRESS, 0, INSTR(ADDRESS, ' \#'))) \
-    ELSE TRIM(ADDRESS) END
+    WHEN INSTR(address, ' UNIT') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ' UNIT'))) \
+    WHEN INSTR(address, ', UNIT') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ', UNIT'))) \
+    WHEN INSTR(address, ', APT.') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ', APT.'))) \
+    WHEN INSTR(address, ', APT') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ', APT'))) \
+    WHEN INSTR(address, ',APT') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ',APT'))) \
+    WHEN INSTR(address, '.APT') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, '.APT'))) \
+    WHEN INSTR(address, '. APT.') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, '. APT.'))) \
+    WHEN INSTR(address, ' APT.') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ' APT.'))) \
+    WHEN INSTR(address , ', \#') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ', \#'))) \
+    WHEN INSTR(address , ' \#') THEN \
+        TRIM(SUBSTR(address, 0, INSTR(address, ' \#'))) \
+    ELSE TRIM(address) END
 
 SQLITE_CASE_APT = CASE \
-    WHEN INSTR(ADDRESS, ' UNIT') THEN \
-        TRIM(SUBSTR(ADDRESS, 5 + INSTR(ADDRESS, ' UNIT'))) \
-    WHEN INSTR(ADDRESS, ', UNIT') THEN \
-        TRIM(SUBSTR(ADDRESS, 6 + INSTR(ADDRESS, ', UNIT'))) \
-    WHEN INSTR(ADDRESS, ',APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 4 + INSTR(ADDRESS, ',APT'))) \
-    WHEN INSTR(ADDRESS, '.APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 4 + INSTR(ADDRESS, '.APT'))) \
-    WHEN INSTR(ADDRESS, ', APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 6 + INSTR(ADDRESS, ', APT'))) \
-    WHEN INSTR(ADDRESS, ', APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 5 + INSTR(ADDRESS, ', APT'))) \
-    WHEN INSTR(ADDRESS, '. APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 6 + INSTR(ADDRESS, ' APT.'))) \
-    WHEN INSTR(ADDRESS, '. APT') THEN \
-        TRIM(SUBSTR(ADDRESS, 5 + INSTR(ADDRESS, ' APT.'))) \
-    WHEN INSTR(ADDRESS, ' APT.') THEN \
-        TRIM(SUBSTR(ADDRESS, 5 + INSTR(ADDRESS, ' APT.'))) \
-    WHEN INSTR(ADDRESS , ', \#') THEN \
-        TRIM(SUBSTR(ADDRESS, 3 + INSTR(ADDRESS, ', \#'))) \
-    WHEN INSTR(ADDRESS , ' \#') THEN \
-        TRIM(SUBSTR(ADDRESS, 2 + INSTR(ADDRESS, ' \#'))) \
-    ELSE TRIM(APARTMENTNUMBER) END
+    WHEN INSTR(address, ' UNIT') THEN \
+        TRIM(SUBSTR(address, 5 + INSTR(address, ' UNIT'))) \
+    WHEN INSTR(address, ', UNIT') THEN \
+        TRIM(SUBSTR(address, 6 + INSTR(address, ', UNIT'))) \
+    WHEN INSTR(address, ',APT') THEN \
+        TRIM(SUBSTR(address, 4 + INSTR(address, ',APT'))) \
+    WHEN INSTR(address, '.APT') THEN \
+        TRIM(SUBSTR(address, 4 + INSTR(address, '.APT'))) \
+    WHEN INSTR(address, ', APT.') THEN \
+        TRIM(SUBSTR(address, 6 + INSTR(address, ', APT'))) \
+    WHEN INSTR(address, ', APT') THEN \
+        TRIM(SUBSTR(address, 5 + INSTR(address, ', APT'))) \
+    WHEN INSTR(address, '. APT.') THEN \
+        TRIM(SUBSTR(address, 6 + INSTR(address, ' APT.'))) \
+    WHEN INSTR(address, '. APT') THEN \
+        TRIM(SUBSTR(address, 5 + INSTR(address, ' APT.'))) \
+    WHEN INSTR(address, ' APT.') THEN \
+        TRIM(SUBSTR(address, 5 + INSTR(address, ' APT.'))) \
+    WHEN INSTR(address , ', \#') THEN \
+        TRIM(SUBSTR(address, 3 + INSTR(address, ', \#'))) \
+    WHEN INSTR(address , ' \#') THEN \
+        TRIM(SUBSTR(address, 2 + INSTR(address, ' \#'))) \
+    ELSE TRIM(apartmentnumber) END
 
-SQLITE_SELECT = BOROUGH borough, \
-    DATE(SALEDATE) date, \
+SQLITE_SELECT = borough, \
+    DATE(saledate) date, \
     $(SQLITE_CASE_ADDR) address, \
     $(SQLITE_CASE_APT) apt, \
-    ZIPCODE zip, \
-    TRIM(NEIGHBORHOOD) neighborhood, \
-    TRIM(SUBSTR(BUILDINGCLASSCATEGORY, 1, INSTR(BUILDINGCLASSCATEGORY, ' ') - 1)) buildingclasscat, \
-    TRIM(BUILDINGCLASSATPRESENT) buildingclass, \
-    TAXCLASSATTIMEOFSALE taxclass, \
-    BLOCK block, \
-    LOT lot, \
-    RESIDENTIALUNITS resunits, \
-    COMMERCIALUNITS comunits, \
-    TOTALUNITS ttlunits, \
-    REPLACE(LANDSQUAREFEET, ',', '') land_sf, \
-    REPLACE(GROSSSQUAREFEET, ',', '') gross_sf, \
-    YEARBUILT yearbuilt, \
-    REPLACE(REPLACE(SALEPRICE, '$$', ''), ',', '') price, \
-    EASEMENT easement
+    zipcode zip, \
+    TRIM(neighborhood) neighborhood, \
+    TRIM(SUBSTR(buildingclasscategory, 1, INSTR(buildingclasscategory, ' ') - 1)) buildingclasscat, \
+    TRIM(buildingclassatpresent) buildingclass, \
+    taxclassattimeofsale taxclass, \
+    block, \
+    lot, \
+    residentialunits resunits, \
+    commercialunits comunits, \
+    totalunits ttlunits, \
+    REPLACE(landsquarefeet, ',', '') land_sf, \
+    REPLACE(grosssquarefeet, ',', '') gross_sf, \
+    yearbuilt, \
+    REPLACE(REPLACE(saleprice, '$$', ''), ',', '') price, \
+    easement
 
 MYSQL_CASE_ADDR = CASE \
 	WHEN POSITION(' UNIT' IN @addr) \
@@ -167,22 +167,25 @@ PSQL_CASE_APT = CASE \
 PSQL_SELECT = BOROUGH borough, \
     DATE(SALEDATE) as date, \
     $(PSQL_CASE_ADDR) as address, \
+PSQL_SELECT = borough, \
+    DATE(saledate) date, \
+    $(PSQL_CASE_ADDR) address, \
     $(PSQL_CASE_APT) apt, \
-    ZIPCODE zip, \
-    TRIM(NEIGHBORHOOD) neighborhood, \
-    TRIM(SUBSTRING(BUILDINGCLASSCATEGORY, 0, POSITION(' ' IN BUILDINGCLASSCATEGORY))) buildingclasscat, \
-    TRIM(BUILDINGCLASSATPRESENT) buildingclass, \
-    TRIM(TAXCLASSATTIMEOFSALE) taxclass, \
-    CAST(BLOCK as INTEGER) block, \
-    CAST(LOT as INTEGER) lot, \
-    CAST(REPLACE(RESIDENTIALUNITS, ',', '') as INTEGER) resunits, \
-    CAST(REPLACE(COMMERCIALUNITS, ',', '') as INTEGER) comunits, \
-    CAST(REPLACE(TOTALUNITS, ',', '') as INTEGER) ttlunits, \
-    CAST(REPLACE(LANDSQUAREFEET, ',', '') as INTEGER) land_sf, \
-    CAST(REPLACE(GROSSSQUAREFEET, ',', '') as INTEGER) gross_sf, \
-    YEARBUILT yearbuilt, \
-    CAST(REPLACE(REPLACE(SALEPRICE, '$$', ''), ',', '') as INTEGER) price, \
-    BOOL(REPLACE(EASEMENT, 'E', 'T')) easement
+    zipcode zip, \
+    TRIM(neighborhood) neighborhood, \
+    TRIM(SUBSTRING(buildingclasscategory, 0, POSITION(' ' IN buildingclasscategory))) buildingclasscat, \
+    TRIM(buildingclassatpresent) buildingclass, \
+    TRIM(taxclassattimeofsale) taxclass, \
+    CAST(block AS INTEGER) block, \
+    CAST(lot AS INTEGER) lot, \
+    CAST(REPLACE(residentialunits, ',', '') AS INTEGER) resunits, \
+    CAST(REPLACE(commercialunits, ',', '') AS INTEGER) comunits, \
+    CAST(REPLACE(totalunits, ',', '') AS INTEGER) ttlunits, \
+    CAST(REPLACE(landsquarefeet, ',', '') AS INTEGER) land_sf, \
+    CAST(REPLACE(grosssquarefeet, ',', '') AS INTEGER) gross_sf, \
+    yearbuilt, \
+    CAST(REPLACE(REPLACE(saleprice, '$$', ''), ',', '') AS BIGINT) price, \
+    BOOL(REPLACE(easement, 'E', 'T')) easement
 
 ID_FIELD = id,
 
@@ -200,19 +203,19 @@ SALES_FIELDS = id, \
     price, \
     easement
 
-SALES_TMP_FIELDS = BOROUGH, \
-    NEIGHBORHOOD, \
-    BUILDINGCLASSCATEGORY, \
-    TAXCLASSATPRESENT, \
-    BLOCK, LOT, \
-    EASEMENT, \
-    BUILDINGCLASSATPRESENT, \
-    ADDRESS, APARTMENTNUMBER, ZIPCODE, \
-    RESIDENTIALUNITS, COMMERCIALUNITS, TOTALUNITS, \
-    LANDSQUAREFEET, GROSSSQUAREFEET, \
-    YEARBUILT, \
-    TAXCLASSATTIMEOFSALE, BUILDINGCLASSATTIMEOFSALE, \
-    SALEPRICE, SALEDATE
+SALES_TMP_FIELDS = borough, \
+    neighborhood, \
+    buildingclasscategory, \
+    taxclassatpresent, \
+    block, lot, \
+    easement, \
+    buildingclassatpresent, \
+    address, apartmentnumber, zipcode, \
+    residentialunits, commercialunits, totalunits, \
+    landsquarefeet, grosssquarefeet, \
+    yearbuilt, \
+    taxclassattimeofsale, buildingclassattimeofsale, \
+    saleprice, saledate
 
 .PHONY: all rolling mysql mysql-% postresql psql-% sqlite sqlite-% summary clean mysqlclean install select-%
 
