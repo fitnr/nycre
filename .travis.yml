@@ -47,7 +47,6 @@ addons:
 
 matrix:
   allow_failures:
-    - env: DB=sqlite
     - env: DB=postgresql
 
   exclude:

@@ -334,8 +334,8 @@ select-mysql:
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
 select-postgresql:
-	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --set ON_ERROR_STOP=on -c "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
-	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --set ON_ERROR_STOP=on -c "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) -Atc "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) -Atc "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
