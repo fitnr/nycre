@@ -2,6 +2,7 @@ BIN = node_modules/.bin
 CSVSORT = csvsort
 CSVGREP = csvgrep
 MYSQL = mysql --user="$(USER)" $(PASSFLAG)$(PASS)
+PSQL = psql --username="$(USER)"
 SQLITE = sqlite3
 
 SALES = json/sales.json
@@ -24,6 +25,7 @@ SUMMARYFILES := $(addprefix summaries/,$(BOROUGHCSV))
 
 ROLLINGCSVFILES := $(addprefix rolling/raw/borough/,$(BOROUGHCSV))
 
+DB = mysql
 DATABASE = nycre
 
 CURLFLAGS = --progress-bar
@@ -138,7 +140,81 @@ MYSQL_INSERT = (borough, @nabe, @category, @dummy_tax_class, \
 	buildingclass=TRIM(@buildingclass), \
 	date=STR_TO_DATE(@date, '%m/%d/%y')
 
-.PHONY: all rolling mysql mysql-% sqlite sqlite-% summary clean mysqlclean install select-%
+PSQL_CASE_ADDR = CASE \
+	WHEN BOOL(POSITION(' UNIT' IN ADDRESS)) \
+	    THEN TRIM(TRIM(trailing '.' from TRIM(trailing ',' from TRIM(substring(' UNIT' from ADDRESS))))) \
+	WHEN BOOL(POSITION(', APT' IN ADDRESS)) \
+	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(', APT' from ADDRESS)))) \
+	WHEN BOOL(strpos(ADDRESS, ' APT.')) \
+	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(' APT.' from ADDRESS)))) \
+	WHEN BOOL(position('\#' in substring(ADDRESS from '%/, ?\#/%' for '/'))) \
+	    THEN TRIM(TRIM(trailing '.' from TRIM(trailing ',' from TRIM(substring('\#' from ADDRESS))))) \
+	WHEN BOOL(POSITION(', ' IN ADDRESS)) \
+	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(', ' from ADDRESS)))) \
+	ELSE TRIM(ADDRESS) END
+
+PSQL_CASE_APT = CASE \
+	WHEN BOOL(POSITION(' UNIT' IN ADDRESS)) \
+		THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(' UNIT' from ADDRESS)))))) \
+	WHEN BOOL(POSITION(', APT' IN ADDRESS)) \
+	    THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(', APT' from ADDRESS)))))) \
+	WHEN BOOL(POSITION(' APT.' IN ADDRESS)) \
+	    THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(' APT.' from ADDRESS)))))) \
+	WHEN BOOL(position('\#' in substring(ADDRESS from '%/, ?\#/%' for '/'))) \
+		THEN TRIM(substring(', ' from ADDRESS)) \
+	ELSE APARTMENTNUMBER END
+
+PSQL_SELECT = BOROUGH borough, \
+    DATE(SALEDATE) as date, \
+    $(PSQL_CASE_ADDR) as address, \
+    $(PSQL_CASE_APT) apt, \
+    ZIPCODE zip, \
+    TRIM(NEIGHBORHOOD) neighborhood, \
+    TRIM(SUBSTRING(BUILDINGCLASSCATEGORY, 0, POSITION(' ' IN BUILDINGCLASSCATEGORY))) buildingclasscat, \
+    TRIM(BUILDINGCLASSATPRESENT) buildingclass, \
+    TRIM(TAXCLASSATTIMEOFSALE) taxclass, \
+    CAST(BLOCK as INTEGER) block, \
+    CAST(LOT as INTEGER) lot, \
+    CAST(REPLACE(RESIDENTIALUNITS, ',', '') as INTEGER) resunits, \
+    CAST(REPLACE(COMMERCIALUNITS, ',', '') as INTEGER) comunits, \
+    CAST(REPLACE(TOTALUNITS, ',', '') as INTEGER) ttlunits, \
+    CAST(REPLACE(LANDSQUAREFEET, ',', '') as INTEGER) land_sf, \
+    CAST(REPLACE(GROSSSQUAREFEET, ',', '') as INTEGER) gross_sf, \
+    YEARBUILT yearbuilt, \
+    CAST(REPLACE(REPLACE(SALEPRICE, '$$', ''), ',', '') as INTEGER) price, \
+    BOOL(REPLACE(EASEMENT, 'E', 'T')) easement
+
+ID_FIELD = id,
+
+SALES_FIELDS = id, \
+    borough, \
+    date, \
+    address, apt, zip, \
+    neighborhood, \
+    buildingclasscat, buildingclass, \
+    taxclass, \
+    block, lot, \
+    resunits, comunits, ttlunits, \
+    land_sf, gross_sf, \
+    yearbuilt, \
+    price, \
+    easement
+
+SALES_TMP_FIELDS = BOROUGH, \
+    NEIGHBORHOOD, \
+    BUILDINGCLASSCATEGORY, \
+    TAXCLASSATPRESENT, \
+    BLOCK, LOT, \
+    EASEMENT, \
+    BUILDINGCLASSATPRESENT, \
+    ADDRESS, APARTMENTNUMBER, ZIPCODE, \
+    RESIDENTIALUNITS, COMMERCIALUNITS, TOTALUNITS, \
+    LANDSQUAREFEET, GROSSSQUAREFEET, \
+    YEARBUILT, \
+    TAXCLASSATTIMEOFSALE, BUILDINGCLASSATTIMEOFSALE, \
+    SALEPRICE, SALEDATE
+
+.PHONY: all rolling mysql mysql-% postresql psql-% sqlite sqlite-% summary clean mysqlclean install select-%
 
 all: $(foreach y,$(YEARS),sales/$y-city.csv)
 
@@ -175,6 +251,26 @@ mysqlcreate: sql/mysql-create-tables.sql building-class.csv
 	$(MYSQL) $(MYSQLFLAGS) --database='$(DATABASE)' < $<
 	$(MYSQL) $(MYSQLFLAGS) --local-infile --execute="LOAD DATA LOCAL INFILE '$(lastword $^)' INTO TABLE $(DATABASE).building_class \
   	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
+
+postgresql: $(addprefix psql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | psqlcreate
+
+psql-%: sales/raw/%.csv | psqlcreate
+	tail -n+2 $< | \
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "COPY sales_tmp($(SALES_TMP_FIELDS)) \
+	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
+
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
+	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
+	INSERT INTO sales SELECT $(filter-out $(ID_FIELD),$(SALES_FIELDS)) FROM a;"
+
+psqlcreate: sql/psql-create-tables.sql building-class.csv
+	$(PSQL) $(PSQLFLAGS) --command "CREATE DATABASE $(DATABASE)" || echo "$(DATABASE) probably exists"
+
+	$(PSQL) --dbname=$(DATABASE) $(PSQLFLAGS) --single-transaction < $<
+
+	tail -n+2 $(lastword $^) | \
+	$(PSQL) --dbname=$(DATABASE) $(PSQLFLAGS) --command="COPY building_class(id, name) \
+	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
 
 sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | nycre.db
 
@@ -229,6 +325,13 @@ select-mysql:
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
+select-postgresql:
+	$(PSQL) $(DATABASE) $(PSQLFLAGS) --set ON_ERROR_STOP=on -c "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
+	$(PSQL) $(DATABASE) $(PSQLFLAGS) --set ON_ERROR_STOP=on -c "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
+		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
+		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
+		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
+
 select-sqlite: $(DATABASE).db
 	$(SQLITE) $(SQLITEFLAGS) $< "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
 	$(SQLITE) $(SQLITEFLAGS) $< "SELECT r.name, s.buildingclass, b.name, s.buildingclasscat, c.name, t.name, s.taxclass, t.name \
@@ -236,7 +339,8 @@ select-sqlite: $(DATABASE).db
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
 
-mysqlclean: ; $(MYSQL) --execute "DROP DATABASE IF EXISTS nycre;"
+mysqlclean: ; $(MYSQL) --execute "DROP DATABASE IF EXISTS $(DATABASE);"
+postgresqlclean: ; $(PSQL) --command "DROP DATABASE $(DATABASE);"
 
 install:
 	npm install

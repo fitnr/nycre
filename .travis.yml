@@ -5,6 +5,7 @@ os:
 env:
   - DB=mysql
   - DB=sqlite
+  - DB=postgresql
 
 sudo: true
 
@@ -16,6 +17,8 @@ install:
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then brew install sqlite; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then export SQLITE3=/usr/local/opt/sqlite/bin/sqlite3; else export SQLITE3=sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then export SILENT=--silent; fi
+ - if [[ $DB == "mysql" ]]; then export USER=root; fi
+ - if [[ $DB == "postgresql" ]]; then export USER=postgres; fi
  - make install
 
 before_script:
@@ -30,15 +33,23 @@ script:
  - make -j2 sales/raw/2008-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 --silent sales/raw/2012-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
- - make $SILENT $DB USER=root PASSFLAG= YEARS=2008 SQLITE=$SQLITE3
- - make $SILENT $DB USER=root PASSFLAG= YEARS=2012 SQLITE=$SQLITE3
+ - make $SILENT $DB USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
- - make USER=root PASSFLAG= select-$DB
+ - make USER=$USER PASSFLAG= select-$DB
 
 after_failure:
  - head -n 10 sales/raw/20{08,12}-{bronx,brooklyn,manhattan}.csv
 
+addons:
+  postgresql: 9.4
+
 matrix:
   allow_failures:
     - env: DB=sqlite
+    - env: DB=postgresql
+
+  exclude:
+    -
+        env: DB=postgresql
+        os: osx
