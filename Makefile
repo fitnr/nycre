@@ -140,33 +140,32 @@ MYSQL_INSERT = (borough, @nabe, @category, @dummy_tax_class, \
 	buildingclass=TRIM(@buildingclass), \
 	date=STR_TO_DATE(@date, '%m/%d/%y')
 
-PSQL_CASE_ADDR = CASE \
-	WHEN BOOL(POSITION(' UNIT' IN ADDRESS)) \
-	    THEN TRIM(TRIM(trailing '.' from TRIM(trailing ',' from TRIM(substring(' UNIT' from ADDRESS))))) \
-	WHEN BOOL(POSITION(', APT' IN ADDRESS)) \
-	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(', APT' from ADDRESS)))) \
-	WHEN BOOL(strpos(ADDRESS, ' APT.')) \
-	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(' APT.' from ADDRESS)))) \
-	WHEN BOOL(position('\#' in substring(ADDRESS from '%/, ?\#/%' for '/'))) \
-	    THEN TRIM(TRIM(trailing '.' from TRIM(trailing ',' from TRIM(substring('\#' from ADDRESS))))) \
-	WHEN BOOL(POSITION(', ' IN ADDRESS)) \
-	    THEN TRIM(TRIM(trailing '.' from TRIM(substring(', ' from ADDRESS)))) \
-	ELSE TRIM(ADDRESS) END
+# can't directly address an array created by a function,
+# workaround by joining with a special character string and splitting
 
-PSQL_CASE_APT = CASE \
-	WHEN BOOL(POSITION(' UNIT' IN ADDRESS)) \
-		THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(' UNIT' from ADDRESS)))))) \
-	WHEN BOOL(POSITION(', APT' IN ADDRESS)) \
-	    THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(', APT' from ADDRESS)))))) \
-	WHEN BOOL(POSITION(' APT.' IN ADDRESS)) \
-	    THEN TRIM(TRIM(leading '.' FROM TRIM(TRIM(leading '\#' FROM TRIM(SUBSTRING(' APT.' from ADDRESS)))))) \
-	WHEN BOOL(position('\#' in substring(ADDRESS from '%/, ?\#/%' for '/'))) \
-		THEN TRIM(substring(', ' from ADDRESS)) \
-	ELSE APARTMENTNUMBER END
+PSQL_CASE_ADDR = CASE WHEN \
+	ARRAY_LENGTH( \
+		REGEXP_SPLIT_TO_ARRAY( \
+			address, \
+			', | UNIT[\# ]?|[,.] APT[ \#.,]?| ?\# ?' \
+		), 1) > 1 \
+	THEN TRIM(SUBSTRING( \
+		ARRAY_TO_STRING( \
+			REGEXP_SPLIT_TO_ARRAY(address, ', | UNIT[\# ]?|[,.] APT[ \#.,]?| ?\# ?'), \
+			'~~~') \
+		FROM '/"_+/"~~~%' for '/')) \
+	ELSE REGEXP_REPLACE(address, ' +', ' ') \
+	END
 
-PSQL_SELECT = BOROUGH borough, \
-    DATE(SALEDATE) as date, \
-    $(PSQL_CASE_ADDR) as address, \
+PSQL_CASE_APT = CASE WHEN LENGTH(apartmentnumber) > 0 \
+	THEN apartmentnumber \
+	ELSE TRIM(SUBSTRING( \
+		ARRAY_TO_STRING( \
+			REGEXP_SPLIT_TO_ARRAY(address, ', | UNIT[\# ]?|[,.] APT[ \#.,]?| ?\# ?'), \
+			'~~~') \
+		FROM '%~~~/"_+/"' FOR '/')) \
+	END
+
 PSQL_SELECT = borough, \
     DATE(saledate) date, \
     $(PSQL_CASE_ADDR) address, \

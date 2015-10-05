@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS sales (
   borough INTEGER DEFAULT NULL REFERENCES borough(id),
   date date DEFAULT NULL,
   address varchar(256) DEFAULT NULL,
-  apt varchar(8) DEFAULT NULL,
+  apt varchar(128) DEFAULT NULL,
   zip varchar(5) DEFAULT NULL,
   neighborhood varchar(64) DEFAULT NULL,
   buildingclasscat varchar(3) DEFAULT NULL REFERENCES building_class_category(id),
