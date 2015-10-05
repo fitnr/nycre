@@ -77,6 +77,8 @@ $ make postgresql USER=me
 $ make sqlite
 ````
 
+Tables named `sales`, `borough`, `building_class_category`, `building_class` and `tax_class` will be created.
+
 ### MySQL
 
 The conversion to MySQL tries to split out the apartment number part of the address field, but doesn't do any other processing beside formatting prices and dates.
@@ -86,15 +88,12 @@ Load sales data into a MySQL database:
 ````
 $ make mysql USER=username PASS=password
 ````
-
-You can leave off the password, you'll be prompted several times to enter it. If your account doesn't have a password, I judge your security practices, but you can run: `make mysql USER=username PASSFLAG=`.
-
 This will try to connect to `localhost` and create a database named `nycre`. You can customize the database name and add any other mysql flags you might need like so:
 ````
 $ make mysql DATABASE=mydatabase MYSQLFLAGS="-H myhost.com -P 5432"
 ````
 
-Tables named `sales`, `borough`, `building_class_category`, `building_class` and `tax_class` will be created.
+You can leave off the password, you'll be prompted several times to enter it. If your account doesn't have a password, I judge your security practices, but you can run: `make mysql USER=username PASSFLAG=`.
 
 ### PostgreSQL
 
