@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS sales (
 );
 
 DROP TABLE IF EXISTS sales_tmp;
+
 CREATE TABLE sales_tmp (
   borough INTEGER DEFAULT NULL,
   neighborhood TEXT DEFAULT NULL,
@@ -134,4 +135,13 @@ CREATE TABLE sales_tmp (
 
 CREATE INDEX price ON sales (price);
 
-CREATE INDEX BBL ON sales (CONCAT(borough, block, lot));
+CREATE OR REPLACE FUNCTION makebbl(borough INTEGER, block INTEGER, lot INTEGER)
+  RETURNS INTEGER
+AS
+$BODY$
+  SELECT borough * 100000000 + block * 10000 + lot
+$BODY$
+LANGUAGE sql
+IMMUTABLE;
+
+CREATE INDEX BBL ON sales (makebbl(borough, block, lot));
