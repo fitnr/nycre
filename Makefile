@@ -255,11 +255,12 @@ mysqlcreate: sql/mysql-create-tables.sql building-class.csv
   	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
 
 postgresql: $(addprefix psql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | psqlcreate
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "DROP TABLE sales_tmp;"
 
 psql-%: sales/raw/%.csv | psqlcreate
 	tail -n+2 $< | \
-	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "COPY sales_tmp($(SALES_TMP_FIELDS)) \
-	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) \
+	--command "COPY sales_tmp($(SALES_TMP_FIELDS)) FROM stdin DELIMITER ',' CSV QUOTE '\"';"
 
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
 	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
@@ -275,6 +276,7 @@ psqlcreate: sql/psql-create-tables.sql building-class.csv
 	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
 
 sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | nycre.db
+	$(SQLITE) $(SQLITEFLAGS) $| "DROP TABLE sales_tmp"
 
 sqlite-%: sales/raw/%.csv | nycre.db
 	$(SQLITE) $(SQLITEFLAGS) -separator , $| '.import "$<" sales_tmp'
