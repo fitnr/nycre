@@ -21,6 +21,8 @@ install:
 before_script:
  - which $SQLITE3
  - $SQLITE3 -version
+ - mysql --version
+ - psql --version
 
 # Broken up like this because travis chokes on the long delete list
 # The --silent flags are because travis's on the huge log
@@ -30,9 +32,11 @@ script:
  - make -j2 sales/raw/2008-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 --silent sales/raw/2012-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
- - make $SILENT $DB USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
+ - make database $SILENT DB=$DB USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
+
+after_success:
  - make USER=$USER PASSFLAG= select-$DB
 
 after_failure:

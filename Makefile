@@ -216,7 +216,8 @@ SALES_TMP_FIELDS = borough, \
     taxclassattimeofsale, buildingclassattimeofsale, \
     saleprice, saledate
 
-.PHONY: all rolling mysql mysql-% postresql psql-% sqlite sqlite-% summary clean mysqlclean install select-%
+.PHONY: all rolling database mysql mysql-% postresql psql-% \
+	sqlite sqlite-% summary clean mysqlclean install select-% 
 
 all: $(foreach y,$(YEARS),sales/$y-city.csv)
 
@@ -240,6 +241,8 @@ rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
 	$(BIN)/json .$* --array -f $< | \
 	xargs curl $(CURLFLAGS) > $@
+
+database: $(DB)
 
 mysql: $(addprefix mysql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | mysqlcreate
 
