@@ -81,7 +81,8 @@ SQLITE_CASE_APT = CASE \
         TRIM(SUBSTR(address, 2 + INSTR(address, ' \#'))) \
     ELSE TRIM(apartmentnumber) END
 
-SQLITE_SELECT = borough, \
+SQLITE_SELECT = (borough * 1000000000 + block * 10000 + lot) BBL, \
+	borough, \
     DATE(saledate) date, \
     $(SQLITE_CASE_ADDR) address, \
     $(SQLITE_CASE_APT) apt, \
@@ -130,6 +131,7 @@ MYSQL_INSERT = (borough, @nabe, @category, @dummy_tax_class, \
 	resunits, comunits, ttlunits, @land_sf, @gross_sf, yearbuilt, \
 	@taxclass, @buildingclass, @price, @date) \
 	SET neighborhood=TRIM(@nabe), \
+	bbl=(borough * 1000000000 + block * 10000 + lot), \
 	address=$(MYSQL_CASE_ADDR), \
 	apt=$(MYSQL_CASE_APT), \
 	gross_sf=REPLACE(@gross_sf, ',', ''), \
@@ -166,7 +168,10 @@ PSQL_CASE_APT = CASE WHEN LENGTH(apartmentnumber) > 0 \
 		FROM '%~~~/"_+/"' FOR '/')) \
 	END
 
-PSQL_SELECT = borough, \
+PSQL_SELECT = (borough * 1000000000 + CAST(block as INTEGER) * 10000 + CAST(lot as INTEGER)) bbl, \
+	borough, \
+    CAST(block AS INTEGER) block, \
+    CAST(lot AS INTEGER) lot, \
     DATE(saledate) date, \
     $(PSQL_CASE_ADDR) address, \
     $(PSQL_CASE_APT) apt, \
@@ -175,8 +180,6 @@ PSQL_SELECT = borough, \
     TRIM(SUBSTRING(buildingclasscategory, 0, POSITION(' ' IN buildingclasscategory))) buildingclasscat, \
     TRIM(buildingclassatpresent) buildingclass, \
     TRIM(taxclassattimeofsale) taxclass, \
-    CAST(block AS INTEGER) block, \
-    CAST(lot AS INTEGER) lot, \
     CAST(REPLACE(residentialunits, ',', '') AS INTEGER) resunits, \
     CAST(REPLACE(commercialunits, ',', '') AS INTEGER) comunits, \
     CAST(REPLACE(totalunits, ',', '') AS INTEGER) ttlunits, \
@@ -186,16 +189,13 @@ PSQL_SELECT = borough, \
     CAST(REPLACE(REPLACE(saleprice, '$$', ''), ',', '') AS BIGINT) price, \
     BOOL(REPLACE(easement, 'E', 'T')) easement
 
-ID_FIELD = id,
-
-SALES_FIELDS = id, \
-    borough, \
+SALES_FIELDS = bbl, \
+    borough, block, lot, \
     date, \
     address, apt, zip, \
     neighborhood, \
     buildingclasscat, buildingclass, \
     taxclass, \
-    block, lot, \
     resunits, comunits, ttlunits, \
     land_sf, gross_sf, \
     yearbuilt, \
@@ -266,7 +266,7 @@ psql-%: sales/raw/%.csv | psqlcreate
 
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
 	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
-	INSERT INTO sales SELECT $(filter-out $(ID_FIELD),$(SALES_FIELDS)) FROM a;"
+	INSERT INTO sales SELECT $(SALES_FIELDS) FROM a;"
 
 psqlcreate: sql/psql-create-tables.sql building-class.csv
 	$(PSQL) $(PSQLFLAGS) --command "CREATE DATABASE $(DATABASE)" || echo "$(DATABASE) probably exists"

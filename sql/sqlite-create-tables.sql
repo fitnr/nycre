@@ -29,6 +29,7 @@ CREATE TABLE `tax_class` (
 DROP TABLE IF EXISTS sales;
 
 CREATE TABLE `sales` (
+  `bbl` integer DEFAULT NULL,
   `borough` TEXT DEFAULT NULL,
   `date` date DEFAULT NULL,
   `address` varchar(256) DEFAULT NULL,
@@ -77,7 +78,8 @@ CREATE TABLE `sales_tmp` (
 
 CREATE INDEX `price` ON sales (`price`);
 
-CREATE INDEX `BBL` ON sales (`borough`,`block`,`lot`);
+CREATE INDEX `BB` ON sales (`borough`, `block`);
+CREATE INDEX `BBL` ON sales (`bbl`);
 
 INSERT INTO `borough` (`id`, `name`)
 VALUES

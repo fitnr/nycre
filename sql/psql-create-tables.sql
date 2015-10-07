@@ -85,8 +85,10 @@ VALUES
 
 -- Not dropping the sales table because you might have stuff if it!
 CREATE TABLE IF NOT EXISTS sales (
-  -- id INTEGER PRIMARY KEY,
+  bbl BIGINT DEFAULT NULL,
   borough INTEGER DEFAULT NULL REFERENCES borough(id),
+  block integer DEFAULT NULL,
+  lot integer DEFAULT NULL,
   date date DEFAULT NULL,
   address varchar(256) DEFAULT NULL,
   apt varchar(128) DEFAULT NULL,
@@ -95,8 +97,6 @@ CREATE TABLE IF NOT EXISTS sales (
   buildingclasscat varchar(3) DEFAULT NULL REFERENCES building_class_category(id),
   buildingclass varchar(3) DEFAULT NULL REFERENCES building_class(id),
   taxclass varchar(2) DEFAULT NULL REFERENCES tax_class(id),
-  block integer DEFAULT NULL,
-  lot integer DEFAULT NULL,
   resunits integer DEFAULT NULL,
   comunits integer DEFAULT NULL,
   ttlunits integer DEFAULT NULL,
@@ -106,6 +106,13 @@ CREATE TABLE IF NOT EXISTS sales (
   price bigint DEFAULT NULL,
   easement boolean DEFAULT NULL
 );
+
+CREATE INDEX price ON sales (price);
+
+CREATE INDEX BBL ON sales (bbl);
+CREATE INDEX BB ON sales (borough, block);
+
+CREATE INDEX date ON sales (date);
 
 DROP TABLE IF EXISTS sales_tmp;
 
@@ -132,16 +139,3 @@ CREATE TABLE sales_tmp (
   saleprice TEXT DEFAULT NULL,
   saledate TEXT DEFAULT NULL
 );
-
-CREATE INDEX price ON sales (price);
-
-CREATE OR REPLACE FUNCTION makebbl(borough INTEGER, block INTEGER, lot INTEGER)
-  RETURNS INTEGER
-AS
-$BODY$
-  SELECT borough * 100000000 + block * 10000 + lot
-$BODY$
-LANGUAGE sql
-IMMUTABLE;
-
-CREATE INDEX BBL ON sales (makebbl(borough, block, lot));

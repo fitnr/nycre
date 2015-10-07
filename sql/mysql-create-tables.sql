@@ -32,8 +32,10 @@ CREATE TABLE `tax_class` (
 
 -- Not dropping the sales table because you might have stuff if it!
 CREATE TABLE IF NOT EXISTS `sales` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `bbl` bigint(22) unsigned NOT NULL,
   `borough` enum('1','2','3','4','5') DEFAULT NULL,
+  `block` smallint(5) unsigned DEFAULT NULL,
+  `lot` smallint(5) unsigned DEFAULT NULL,
   `date` date DEFAULT NULL,
   `address` varchar(256) DEFAULT NULL,
   `apt` varchar(8) DEFAULT NULL,
@@ -42,8 +44,6 @@ CREATE TABLE IF NOT EXISTS `sales` (
   `buildingclasscat` varchar(3) DEFAULT NULL,
   `buildingclass` varchar(3) DEFAULT NULL,
   `taxclass` varchar(2) DEFAULT NULL,
-  `block` smallint(5) unsigned DEFAULT NULL,
-  `lot` smallint(5) unsigned DEFAULT NULL,
   `resunits` smallint(5) unsigned DEFAULT NULL,
   `comunits` smallint(5) unsigned DEFAULT NULL,
   `ttlunits` smallint(5) unsigned DEFAULT NULL,
@@ -52,9 +52,10 @@ CREATE TABLE IF NOT EXISTS `sales` (
   `yearbuilt` smallint(4) unsigned DEFAULT NULL,
   `price` int(10) unsigned DEFAULT NULL,
   `easement` binary(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
   KEY `price` (`price`),
-  KEY `BBL` (`borough`,`block`,`lot`)
+  KEY `date` (`date`),
+  KEY `BBL` (`bbl`)
+  KEY `BB` (`borough`, `block`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 INSERT INTO `borough` (`id`, `name`)
