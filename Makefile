@@ -248,7 +248,7 @@ mysql: $(addprefix mysql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) 
 
 mysql-%: sales/raw/%.csv | mysqlcreate
 	$(MYSQL) $(MYSQLFLAGS) --local-infile --execute="LOAD DATA LOCAL INFILE '$<' INTO TABLE $(DATABASE).sales \
-	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES \
+	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' \
 	$(MYSQL_INSERT);"
 
 mysqlcreate: sql/mysql-create-tables.sql building-class.csv
@@ -261,9 +261,8 @@ postgresql: $(addprefix psql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "DROP TABLE sales_tmp;"
 
 psql-%: sales/raw/%.csv | psqlcreate
-	tail -n+2 $< | \
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) \
-	--command "COPY sales_tmp($(SALES_TMP_FIELDS)) FROM stdin DELIMITER ',' CSV QUOTE '\"';"
+	--command "COPY sales_tmp($(SALES_TMP_FIELDS)) FROM '$(abspath $<)' DELIMITER ',' CSV QUOTE '\"';"
 
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
 	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
@@ -284,7 +283,6 @@ sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))
 sqlite-%: sales/raw/%.csv | nycre.db
 	$(SQLITE) $(SQLITEFLAGS) -separator , $| '.import "$<" sales_tmp'
 	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) FROM sales_tmp WHERE BOROUGH != 'BOROUGH';"
-	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
 
 $(DATABASE).db: sql/sqlite-create-tables.sql building-class.csv
 	$(SQLITE) $(SQLITEFLAGS) $@ < $<
@@ -303,7 +301,7 @@ summaries/%.xls: $(SUMMARIES) | summaries
 	xargs curl $(CURLFLAGS) > $@
 
 sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
-	{ cat $(HEADER) ; $(foreach file,$^,tail -n+2 $(file) ;) } > $@
+	cat $(HEADER) $^ > $@
 
 sales/raw/%.xls: $(SALES) | sales/raw
 	BASE=$* ; \
@@ -319,6 +317,7 @@ sales/raw/%.csv: sales/raw/%.xls
 	sed -Ee 's/ +("?),/\1,/g' | \
 	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
+	-v -e 'ANNUALIZE SALES FOR' -v -e 'BUILDING CLASS AT TIME OF SALE' \
 	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
 rolling/raw/borough summaries sales sales/raw: ; mkdir -p $@
