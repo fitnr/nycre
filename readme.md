@@ -12,11 +12,8 @@ You might be interested in a related project, [avroll-download](https://github.c
 
 ## Requirements
 
-* [NPM](http://nodejs.org/download/) packages:
-** j
-** sheetstack
-* Python package:
-** [csvkit](https://github.com/onyxfish/csvkit)
+* [NPM](http://nodejs.org/download/) packages: [J](http://npmjs.com/package/j) and [sheetstack](https://www.npmjs.com/package/sheetstack)
+* Python package: [csvkit](https://github.com/onyxfish/csvkit)
 
 (Sorry if it's annoying to require both Javascript and Python packages, it's currently the lightest set of dependencies possible.)
 
