@@ -5,11 +5,10 @@ MYSQL = mysql --user="$(USER)" $(PASSFLAG)$(PASS)
 PSQL = psql --username="$(USER)"
 SQLITE = sqlite3
 
-SALES = json/sales.json
+BASE = http://www1.nyc.gov/assets/finance/downloads
 
-SUMMARIES = json/summaries.json
-
-ROLLING = json/rolling.json
+include ini/sales.ini
+include ini/rolling_summaries.ini
 
 HEADER = header.txt
 
@@ -225,8 +224,8 @@ all: $(foreach y,$(YEARS),sales/$y-city.csv)
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	DATE=$* ; YYYY=$${DATE%-*} ; YY=$${YYYY#20} ; MM=$${DATE#*-} ; M=$${MM#0} ; \
-	$(CSVGREP) -c 'SALE DATE' -r "$$M/\d{1,2}/$$YY" $< | \
-	$(CSVSORT) -c 'SALE DATE',BOROUGH,NEIGHBORHOOD > $@
+	$(CSVGREP) -c SALE_DATE -r "$$M/\d{1,2}/$$YY" $< | \
+	$(CSVSORT) -c SALE_DATE,BOROUGH,NEIGHBORHOOD > $@
 
 rolling: rolling/raw/city.csv
 
@@ -238,9 +237,8 @@ rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
 rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 	$(BIN)/j --quiet --file $^ | grep -v -e '^,\+$$' -v -e '^$$' > $@
 
-rolling/raw/borough/%.xls: $(ROLLING) | rolling/raw/borough
-	$(BIN)/json .$* --array -f $< | \
-	xargs curl $(CURLFLAGS) > $@
+$(foreach b,$(BOROUGHS),rolling/raw/borough/$b.xls): rolling/raw/borough/%.xls: | rolling/raw/borough
+	curl $(CURLFLAGS) $(ROLLING-$*) > $@
 
 database: $(DB)
 
@@ -296,17 +294,14 @@ summaries/%.csv: summaries/%.xls
 	xargs -I{} $(BIN)/sheetstack --groups {} --group-name year --rm-lines 4 $<| \
 	sed -Ee 's/ +("?),/\1,/g' > $@
 
-summaries/%.xls: $(SUMMARIES) | summaries
-	$(BIN)/json -f $< .$* | \
-	xargs curl $(CURLFLAGS) > $@
+summaries/%.xls: summaries
+	curl $(CURLFLAGS) $(SUMMARY-$*) > $@
 
 sales/%-city.csv: $(addprefix sales/raw/%-,$(BOROUGHCSV)) | sales
 	cat $(HEADER) $^ > $@
 
-sales/raw/%.xls: $(SALES) | sales/raw
-	BASE=$* ; \
-	$(BIN)/json -f $< .$${BASE%%-*}.$${BASE##*-} --array | \
-	xargs curl $(CURLFLAGS) > $@
+sales/raw/%.xls: | sales/raw
+	curl $(CURLFLAGS) $(SALES-$*) > $@
 
 .SECONDARY:
 # sed: removes whitespace

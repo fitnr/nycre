@@ -14,12 +14,11 @@ You might be interested in a related project, [avroll-download](https://github.c
 
 * [NPM](http://nodejs.org/download/) packages:
 ** j
-** json
 ** sheetstack
 * Python package:
 ** [csvkit](https://github.com/onyxfish/csvkit)
 
-Yes, it's annoying to require both Javascript and Python packages but csvkit is super-useful.
+(Sorry if it's annoying to require both Javascript and Python packages, it's currently the lightest set of dependencies possible.)
 
 ## Installing
 
