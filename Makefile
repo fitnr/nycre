@@ -168,7 +168,7 @@ PSQL_CASE_APT = CASE WHEN LENGTH(apartmentnumber) > 0 \
 		FROM '%~~~/"_+/"' FOR '/')) \
 	END
 
-PSQL_SELECT = (borough * 1000000000 + CAST(block as INTEGER) * 10000 + CAST(lot as INTEGER)) bbl, \
+PSQL_SELECT = CAST(borough as BIGINT) * 1000000000 + CAST(block as INTEGER) * 10000 + CAST(lot as INTEGER) bbl, \
 	borough, \
     CAST(block AS INTEGER) block, \
     CAST(lot AS INTEGER) lot, \
