@@ -8,10 +8,16 @@ The NYC Department of Finance maintains two real estate data sets:
 * [Annualized Sales](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Files with sales records for each year.
 * [Summary Data](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Year-by-year summaries of average prices by neighborhood
 
+You might be interested in a related project, [avroll-download](https://github.com/fitnr/avroll-download), for downloading the City's assessed value database.
+
 ## Requirements
 
-* [NPM](http://nodejs.org/download/)
-* [csvkit](https://github.com/onyxfish/csvkit)
+* [NPM](http://nodejs.org/download/) packages:
+** j
+** json
+** sheetstack
+* Python package:
+** [csvkit](https://github.com/onyxfish/csvkit)
 
 Yes, it's annoying to require both Javascript and Python packages but csvkit is super-useful.
 
