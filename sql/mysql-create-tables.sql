@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `sales` (
   `easement` binary(1) DEFAULT NULL,
   KEY `price` (`price`),
   KEY `date` (`date`),
-  KEY `BBL` (`bbl`)
+  KEY `BBL` (`bbl`),
   KEY `BB` (`borough`, `block`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
