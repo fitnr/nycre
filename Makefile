@@ -128,6 +128,8 @@ MYSQL_CASE_APT = CASE \
 	    THEN TRIM(TRIM(LEADING '.' FROM TRIM(TRIM(LEADING '\#' FROM TRIM(SUBSTRING_INDEX(@addr, ' APT.', -1)))))) \
 	WHEN @addr REGEXP ', ?\#' \
 		THEN TRIM(SUBSTRING_INDEX(@addr, ', ', -1)) \
+	WHEN POSITION(', ' IN @addr) \
+		THEN TRIM(TRIM(TRAILING '.' FROM TRIM(SUBSTRING_INDEX(@addr, ', ', -1)))) \
 	ELSE @apt END
 
 MYSQL_INSERT = (borough, @nabe, @category, @dummy_tax_class, \
@@ -191,13 +193,13 @@ PSQL_SELECT = CAST(borough as BIGINT) * 1000000000 + CAST(block as INTEGER) * 10
     TRIM(SUBSTRING(buildingclasscategory, 0, POSITION(' ' IN buildingclasscategory))) buildingclasscat, \
     TRIM(buildingclassatpresent) buildingclass, \
     TRIM(taxclassattimeofsale) taxclass, \
-    CAST(REPLACE(residentialunits, ',', '') AS INTEGER) resunits, \
-    CAST(REPLACE(commercialunits, ',', '') AS INTEGER) comunits, \
-    CAST(REPLACE(totalunits, ',', '') AS INTEGER) ttlunits, \
-    CAST(REPLACE(landsquarefeet, ',', '') AS INTEGER) land_sf, \
-    CAST(REPLACE(grosssquarefeet, ',', '') AS INTEGER) gross_sf, \
+    CAST(TRANSLATE(residentialunits, ', ', '') AS INTEGER) resunits, \
+    CAST(TRANSLATE(commercialunits, ', ', '') AS INTEGER) comunits, \
+    CAST(TRANSLATE(totalunits, ', ', '') AS INTEGER) ttlunits, \
+    CAST(TRANSLATE(landsquarefeet, ', ', '') AS INTEGER) land_sf, \
+    CAST(TRANSLATE(grosssquarefeet, ', ', '') AS INTEGER) gross_sf, \
     yearbuilt, \
-    CAST(REPLACE(REPLACE(saleprice, '$$', ''), ',', '') AS BIGINT) price, \
+    CAST(TRANSLATE(REPLACE(saleprice, '.00', ''), '-$$, ', '0') AS BIGINT) price, \
     CAST(REPLACE(REPLACE(easement, 'E', 'T'), ' ', '0') AS BOOL) easement
 
 SALES_FIELDS = bbl, \
