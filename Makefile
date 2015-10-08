@@ -344,7 +344,7 @@ sales/raw/%.csv: sales/raw/%.xls
 	sed -Ee 's/ +("?),/\1,/g' | \
 	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
-	-v -e 'ANNUALIZE SALES FOR' -v -e 'BUILDING CLASS AT TIME OF SALE' \
+	-v -e 'ANNUALIZE SALE' -v -e 'BUILDING CLASS AT TIME OF SALE' \
 	-v -e ' All Sales F' -v -e 'Descriptive Data is as of' -v -e 'Coop Sales Files as of' > $@
 
 rolling/raw/borough summaries sales sales/raw: ; mkdir -p $@
