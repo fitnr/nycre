@@ -275,8 +275,6 @@ rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
 $(foreach b,$(BOROUGHS),rolling/raw/borough/$b.xls): rolling/raw/borough/%.xls: | rolling/raw/borough
 	curl $(CURLFLAGS) $(ROLLING-$*) > $@
 
-database: $(DB)
-
 mysql: $(addprefix mysql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | mysqlcreate
 
 mysql-%: sales/raw/%.csv | mysqlcreate
@@ -360,6 +358,7 @@ select-mysql:
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
+	$(MYSQL) $(MYSQLFLAGS) $(DATABASE) -e "SELECT YEAR(date) year, count(*) FROM sales group BY YEAR(date);"
 
 select-postgresql:
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) -Atc "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
@@ -367,6 +366,7 @@ select-postgresql:
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) -Atc "SELECT date_part('year', date), count(*) FROM sales group BY date_part('year', date)"
 
 select-sqlite: $(DATABASE).db
 	$(SQLITE) $(SQLITEFLAGS) $< "SELECT borough, COUNT(*) FROM sales GROUP BY borough;"
@@ -374,6 +374,7 @@ select-sqlite: $(DATABASE).db
 		FROM sales s JOIN building_class b ON s.buildingclass = b.id \
 		LEFT JOIN borough r ON r.id = s.borough LEFT JOIN tax_class t ON s.taxclass = t.id \
 		LEFT JOIN building_class_category c ON c.id=s.buildingclasscat LIMIT 10;"
+	$(SQLITE) $(SQLITEFLAGS) $< "SELECT date, count(*) FROM sales group BY STRFTIME(date, '%Y-%m');"
 
 mysqlclean: ; $(MYSQL) --execute "DROP DATABASE IF EXISTS $(DATABASE);"
 postgresqlclean: ; $(PSQL) --command "DROP DATABASE $(DATABASE);"

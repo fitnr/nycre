@@ -14,6 +14,8 @@ install:
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then brew install sqlite; fi
  - if [[ $TRAVIS_OS_NAME == "osx" && $DB == "sqlite" ]]; then export SQLITE3=/usr/local/opt/sqlite/bin/sqlite3; else export SQLITE3=sqlite3; fi
  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then export SILENT=--silent; fi
+ - if [[ $TRAVIS_OS_NAME == "osx" ]]; then export YEARMO=$(date -v-6m  +"%Y-%m"); fi
+ - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export YEARMO=$(date --date="6 months ago" +"%Y-%m"); fi
  - if [[ $DB == "mysql" ]]; then export USER=root; fi
  - if [[ $DB == "postgresql" ]]; then export USER=postgres; fi
  - make install
@@ -23,6 +25,7 @@ before_script:
  - $SQLITE3 -version || echo
  - mysql --version || echo
  - psql --version || echo
+ - echo $YEARMO
 
 # Broken up like this because travis chokes on the long delete list
 # The --silent flags are because travis's on the huge log
@@ -32,9 +35,10 @@ script:
  - make -j2 sales/raw/2008-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 --silent sales/raw/2012-{bronx,brooklyn,manhattan,queens,statenisland}.xls
  - make -j2 sales/raw/20{04,08,12}-{bronx,brooklyn,manhattan,statenisland,queens}.csv
- - make database $SILENT DB=$DB USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
+ - make $DB $SILENT USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
+ - make rolling-${DB}-${YEARMO} USER=$USER PASSFLAG= SQLITE=$SQLITE3
 
 after_success:
  - make USER=$USER PASSFLAG= select-$DB
