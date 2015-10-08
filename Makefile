@@ -1,5 +1,4 @@
 BIN = node_modules/.bin
-CSVSORT = csvsort
 CSVGREP = csvgrep
 MYSQL = mysql --user="$(USER)" $(PASSFLAG)$(PASS)
 PSQL = psql --username="$(USER)"
@@ -80,9 +79,15 @@ SQLITE_CASE_APT = CASE \
         TRIM(SUBSTR(address, 2 + INSTR(address, ' \#'))) \
     ELSE TRIM(apartmentnumber) END
 
+# Format a MM/DD/YY date into YYYY-MM-DD
+# Only works for years that begin with '20'
+SQLITE_FORMAT_DATE = '20' || substr(saledate, -2, 2) \
+	|| '-' || substr('00' || trim(trim(saledate, '0123456789'), '/'), -2, 2) \
+	|| '-' || substr('00' || substr(saledate, 0, instr(saledate, '/')), -2, 2)
+
 SQLITE_SELECT = (borough * 1000000000 + block * 10000 + lot) BBL, \
 	borough, \
-    DATE(saledate) date, \
+    DATE($(SQLITE_FORMAT_DATE)) date, \
     $(SQLITE_CASE_ADDR) address, \
     $(SQLITE_CASE_APT) apt, \
     zipcode zip, \
@@ -167,11 +172,18 @@ PSQL_CASE_APT = CASE WHEN LENGTH(apartmentnumber) > 0 \
 		FROM '%~~~/"_+/"' FOR '/')) \
 	END
 
+PSQL_DATE_CONVERT = to_date(concat_ws('-', \
+			lpad(split_part(saledate, '/', 1), 2, '0'), \
+			lpad(split_part(saledate, '/', 2), 2, '0'),	\
+			split_part(saledate, '/', 3) \
+		), 'MM/DD/YY' \
+	)
+
 PSQL_SELECT = CAST(borough as BIGINT) * 1000000000 + CAST(block as INTEGER) * 10000 + CAST(lot as INTEGER) bbl, \
 	borough, \
     CAST(block AS INTEGER) block, \
     CAST(lot AS INTEGER) lot, \
-    DATE(saledate) date, \
+    $(PSQL_DATE_CONVERT) date, \
     $(PSQL_CASE_ADDR) address, \
     $(PSQL_CASE_APT) apt, \
     zipcode zip, \
@@ -186,7 +198,7 @@ PSQL_SELECT = CAST(borough as BIGINT) * 1000000000 + CAST(block as INTEGER) * 10
     CAST(REPLACE(grosssquarefeet, ',', '') AS INTEGER) gross_sf, \
     yearbuilt, \
     CAST(REPLACE(REPLACE(saleprice, '$$', ''), ',', '') AS BIGINT) price, \
-    BOOL(REPLACE(easement, 'E', 'T')) easement
+    CAST(REPLACE(REPLACE(easement, 'E', 'T'), ' ', '0') AS BOOL) easement
 
 SALES_FIELDS = bbl, \
     borough, block, lot, \
@@ -224,8 +236,7 @@ all: $(foreach y,$(YEARS),sales/$y-city.csv)
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	DATE=$* ; YYYY=$${DATE%-*} ; YY=$${YYYY#20} ; MM=$${DATE#*-} ; M=$${MM#0} ; \
-	$(CSVGREP) -c SALE_DATE -r "$$M/\d{1,2}/$$YY" $< | \
-	$(CSVSORT) -c SALE_DATE,BOROUGH,NEIGHBORHOOD > $@
+	$(CSVGREP) -c SALE_DATE -r "$$M/\d{1,2}/$$YY" $< > $@
 
 rolling: rolling/raw/city.csv
 
