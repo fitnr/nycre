@@ -87,7 +87,7 @@ SQLITE_FORMAT_DATE = '20' || substr(saledate, -2, 2) \
 
 SQLITE_SELECT = (borough * 1000000000 + block * 10000 + lot) BBL, \
 	borough, \
-    DATE($(SQLITE_FORMAT_DATE)) date, \
+    $(SQLITE_FORMAT_DATE) date, \
     $(SQLITE_CASE_ADDR) address, \
     $(SQLITE_CASE_APT) apt, \
     zipcode zip, \
