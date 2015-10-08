@@ -228,7 +228,8 @@ SALES_TMP_FIELDS = borough, \
     saleprice, saledate
 
 .PHONY: all rolling database mysql mysql-% postresql psql-% \
-	sqlite sqlite-% summary clean mysqlclean install select-% 
+	sqlite sqlite-% summary clean mysqlclean install select-% \
+	rolling-mysql-% rolling-sqlite-% rolling-postgresql-%
 
 all: $(foreach y,$(YEARS),sales/$y-city.csv)
 
@@ -239,6 +240,27 @@ rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
 	$(CSVGREP) -c SALE_DATE -r "$$M/\d{1,2}/$$YY" $< > $@
 
 rolling: rolling/raw/city.csv
+
+# load YYYY-MM into mysql $(DATABASE)
+rolling-mysql-%: rolling/%-city.csv
+	$(MYSQL) $(MYSQLFLAGS) --database $(DATABASE) --local-infile \
+	--execute "LOAD DATA LOCAL INFILE '$^' INTO TABLE $(DATABASE).sales \
+	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES \
+	$(MYSQL_INSERT);"
+
+rolling-postgresql-%: rolling/%-city.csv
+	tail -n+2 $< | $(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "COPY sales_tmp($(SALES_TMP_FIELDS)) \
+	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
+
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
+	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
+	INSERT INTO sales SELECT $(SALES_FIELDS) FROM a;"
+
+rolling-sqlite-%: rolling/%-city.csv | $(DATABASE).db
+	$(SQLITE) $(SQLITEFLAGS) -separator , $| ".import $< sales_tmp"
+	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) \
+	FROM sales_tmp WHERE STRFTIME('%Y-%m', DATE(saledate)) = '$*';"
+	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
 
 .INTERMEDIATE: rolling/raw/city.csv
 rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
@@ -267,7 +289,6 @@ mysqlcreate: sql/mysql-create-tables.sql building-class.csv
   	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (id,name);"
 
 postgresql: $(addprefix psql-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | psqlcreate
-	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "DROP TABLE sales_tmp;"
 
 psql-%: sales/raw/%.csv | psqlcreate
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) \
@@ -286,12 +307,12 @@ psqlcreate: sql/psql-create-tables.sql building-class.csv
 	$(PSQL) --dbname=$(DATABASE) $(PSQLFLAGS) --command="COPY building_class(id, name) \
 	FROM stdin DELIMITER ',' CSV QUOTE '\"';" || :
 
-sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | nycre.db
-	$(SQLITE) $(SQLITEFLAGS) $| "DROP TABLE sales_tmp"
+sqlite: $(addprefix sqlite-,$(foreach b,$(BOROUGHS),$(foreach y,$(YEARS),$y-$b))) | $(DATABASE).db
 
-sqlite-%: sales/raw/%.csv | nycre.db
+sqlite-%: sales/raw/%.csv | $(DATABASE).db
 	$(SQLITE) $(SQLITEFLAGS) -separator , $| '.import "$<" sales_tmp'
 	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) FROM sales_tmp WHERE BOROUGH != 'BOROUGH';"
+	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
 
 $(DATABASE).db: sql/sqlite-create-tables.sql building-class.csv
 	$(SQLITE) $(SQLITEFLAGS) $@ < $<

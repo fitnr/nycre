@@ -38,17 +38,9 @@ $ make
 
 This will create a `sales` folder with files named things like `2013-city.csv`.
 
-### Summaries
-
-````
-make summary
-````
-
-This command will download DOF's annual neighborhood summary data (beginning in 2007) to the `summary` folder.
-
 ### Rolling Sales
 
-The most recent sales data is in DOF's rolling data files. These files generally have sales for a year, up to two-three months ago.
+The most recent sales data is in DOF's rolling data files. These files generally have sales for a year long period, up to two-to-three months ago.
 
 Download the most recent rolling data to `rolling/raw/city.csv`:
 ````
@@ -60,7 +52,31 @@ Download a specific month:
 make rolling/2014-11-city.csv
 ````
 
-### Limiting by year
+To load this "rolling" data into your database, use a command in this format:
+````
+make rolling-database-YYYY-MM
+````
+e.g:
+````
+make rolling-mysql-2015-01
+make rolling-sqlite-2015-02
+make rolling-postgresql-2015-03
+````
+
+If you run the command on a period not currently covered by the rolling data you've downloaded, you'll get an empty result. So if you plan on running this regularly, you'll need to remove the downloaded "raw" data and download current data:
+````
+rm -r rolling/raw
+make rolling
+````
+### Summaries
+
+````
+make summary
+````
+
+This command will download DOF's annual neighborhood summary data (beginning in 2007) to the `summary` folder.
+
+## Limiting by year
 
 To limit the download to only certain years, use the YEARS variable:
 ````
