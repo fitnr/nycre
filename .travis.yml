@@ -38,7 +38,7 @@ script:
  - make $DB $SILENT USER=$USER PASSFLAG= YEARS="2008 2012" SQLITE=$SQLITE3
  - make YEARS="2004 2008 2012"
  - make -j2 --silent summary rolling
- - make rolling-${DB}-${YEARMO} USER=$USER PASSFLAG= SQLITE=$SQLITE3
+ - make rolling-${DB}-${YEARMO} $SILENT USER=$USER PASSFLAG= SQLITE=$SQLITE3
 
 after_success:
  - make USER=$USER PASSFLAG= select-$DB
