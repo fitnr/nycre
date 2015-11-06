@@ -1,5 +1,4 @@
 BIN = node_modules/.bin
-CSVGREP = csvgrep
 MYSQL = mysql --user="$(USER)" $(PASSFLAG)$(PASS)
 PSQL = psql --username="$(USER)"
 SQLITE = sqlite3
@@ -238,8 +237,9 @@ all: $(foreach y,$(YEARS),sales/$y-city.csv)
 # Create rolling files 
 # % should be YYYY-MM
 rolling/%-city.csv: rolling/raw/city.csv | rolling/raw/borough
-	DATE=$* ; YYYY=$${DATE%-*} ; YY=$${YYYY#20} ; MM=$${DATE#*-} ; M=$${MM#0} ; \
-	$(CSVGREP) -c SALE_DATE -r "$$M/\d{1,2}/$$YY" $< > $@
+	DATE=$*; YYYY=$${DATE%-*}; YY=$${YYYY#20}; MM=$${DATE#*-}; M=$${MM#0}; \
+	{ head -1 $< ; \
+	  grep -E ",$$M/[0-9]+/$$YY$$" $< ; } > $@
 
 rolling: rolling/raw/city.csv
 
@@ -381,4 +381,3 @@ postgresqlclean: ; $(PSQL) --command "DROP DATABASE $(DATABASE);"
 
 install:
 	npm install
-	pip list | grep csvkit || pip install csvkit --user

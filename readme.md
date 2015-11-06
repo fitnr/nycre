@@ -11,11 +11,7 @@ The NYC Department of Finance maintains two real estate data sets:
 You might be interested in a related project, [avroll-download](https://github.com/fitnr/avroll-download), for downloading the City's assessed value database.
 
 ## Requirements
-
 * [NPM](http://nodejs.org/download/) packages: [J](http://npmjs.com/package/j) and [sheetstack](https://www.npmjs.com/package/sheetstack)
-* Python package: [csvkit](https://github.com/onyxfish/csvkit)
-
-(Sorry if it's annoying to require both Javascript and Python packages, it's currently the lightest set of dependencies possible.)
 
 ## Installing
 
