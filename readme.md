@@ -1,4 +1,4 @@
-nycre
+NYC real estate data downloader
 =====
 
 Download and pre-process New York City real estate transaction data, which is online in Excel files. This project downloads the data and tranforms it into usable csv files, and optionally loads it into a MySQL, PostgreSQL or SQLite database.
@@ -12,6 +12,7 @@ You might be interested in a related project, [avroll-download](https://github.c
 
 ## Requirements
 * [NPM](http://nodejs.org/download/) packages: [J](http://npmjs.com/package/j) and [sheetstack](https://www.npmjs.com/package/sheetstack)
+* optional: MySQL v14+ or SQLite v3.7.15+ or PostgreSQL 9.3+
 
 ## Installing
 ```
