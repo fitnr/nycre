@@ -14,11 +14,13 @@ You might be interested in a related project, [avroll-download](https://github.c
 * [NPM](http://nodejs.org/download/) packages: [J](http://npmjs.com/package/j) and [sheetstack](https://www.npmjs.com/package/sheetstack)
 
 ## Installing
+```
+git clone git@github.com:fitnr/nycre.git
+cd nycre
+make install
+```
 
-```
-$ git clone git@github.com:fitnr/nycre.git
-$ make install
-```
+This will work if you have [node and NPM installed](https://nodejs.org/en/download/).
 
 ## Downloading data
 
@@ -27,9 +29,8 @@ The download tasks convert DOF's excel files to CSV, but don't do any cleaning o
 ### Sales
 
 To download all the annual sales data, download or clone the repository and run:
-
 ````
-$ make
+make
 ````
 
 This will create a `sales` folder with files named things like `2013-city.csv`.
@@ -76,7 +77,7 @@ This command will download DOF's annual neighborhood summary data (beginning in 
 
 To limit the download to only certain years, use the YEARS variable:
 ````
-$ make YEARS="2010 2011 2012 2013 2014"
+make YEARS="2010 2011 2012 2013 2014"
 ````
 
 In this example, only transaction data from 2010-14 will be downloaded.
@@ -86,9 +87,9 @@ In this example, only transaction data from 2010-14 will be downloaded.
 Short version: run one of these commands to download the sales data and load it into a local database:
 
 ````
-$ make mysql USER=me PASS=pass
-$ make postgresql USER=me
-$ make sqlite
+make mysql USER=me PASS=pass
+make postgresql USER=me
+make sqlite
 ````
 
 Tables named `sales`, `borough`, `building_class_category`, `building_class` and `tax_class` will be created.
@@ -100,11 +101,11 @@ The conversion to MySQL tries to split out the apartment number part of the addr
 Load sales data into a MySQL database:
 
 ````
-$ make mysql USER=username PASS=password
+make mysql USER=username PASS=password
 ````
 This will try to connect to `localhost` and create a database named `nycre`. You can customize the database name and add any other mysql flags you might need like so:
 ````
-$ make mysql DATABASE=mydatabase MYSQLFLAGS="-H myhost.com -P 5432"
+make mysql DATABASE=mydatabase MYSQLFLAGS="-H myhost.com -P 5432"
 ````
 
 You can leave off the password, you'll be prompted several times to enter it. If your account doesn't have a password, I judge your security practices, but you can run: `make mysql USER=username PASSFLAG=`.
@@ -115,17 +116,17 @@ Tested with PostgreSQL v9.4, will likely work on lower versions.
 
 Run:
 ````
-$ make postgresql USER=myusername
+make postgresql USER=myusername
 ````
 
 This assumes that you don't require a password for access. If you do require a password, add the -W flag. You will be prompted to enter the password approximately 60 times (consider temporarily disabling the password requirement).
 ````
-$ make postgresql USER=myusername PSQLFLAGS=-W
+make postgresql USER=myusername PSQLFLAGS=-W
 ````
 
 The data will be loaded into a new database named `nycre`. Customize this and add any additional flags like so: 
 ````
-$ make postgresql DATABASE=mydatabase PSQLFLAGS="-h myhost.com -p 5432"
+make postgresql DATABASE=mydatabase PSQLFLAGS="-h myhost.com -p 5432"
 ````
 
 ### SQLite
@@ -141,7 +142,7 @@ Due to the limitations of SQLite, addresses and apartment numbers are not as wel
 If there's a problem of some kind and your database is damaged, you might want to start over. Run one of these to completely delete the database:
 
 ````
-$ make mysqlclean
-$ make postgresqlclean
-$ rm nycre.db # for sqlite
+make mysqlclean
+make postgresqlclean
+rm nycre.db # for sqlite
 ````
