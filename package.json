@@ -5,7 +5,7 @@
   "repository": "https://github.com/fitnr/nycre",
   "dependencies": {
     "j": "^0.4.3",
-    "sheetstack": "^0.1.0"
+    "sheetstack": "^0.1.2"
   },
   "author": "Neil Freeman",
   "license": "MIT"

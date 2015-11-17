@@ -6,11 +6,13 @@ Download and pre-process New York City real estate transaction data, which is on
 The NYC Department of Finance maintains two real estate data sets:
 * [Rolling Sales](http://www.nyc.gov/html/dof/html/property/rolling_sales_data.shtml): All sales for the last twelve months (usually running with a 2-3 month delay)
 * [Annualized Sales](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Files with sales records for each year.
-* [Summary Data](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml): Year-by-year summaries of average prices by neighborhood
+
+DOF also provides [Summary Data](http://www.nyc.gov/html/dof/html/property/rolling_sales_data_annualized.shtml), year-by-year average prices by neighborhood.
 
 You might be interested in a related project, [avroll-download](https://github.com/fitnr/avroll-download), for downloading the City's assessed value database.
 
 ## Requirements
+* Node v0.12.4 (higher versions will work except for the summary files due to a bug in J)
 * [NPM](http://nodejs.org/download/) packages: [J](http://npmjs.com/package/j) and [sheetstack](https://www.npmjs.com/package/sheetstack)
 * optional: MySQL v14+ or SQLite v3.7.15+ or PostgreSQL 9.3+
 
