@@ -266,7 +266,7 @@ rolling-sqlite-%: rolling/%-city.csv | $(DATABASE).db
 
 .INTERMEDIATE: rolling/raw/city.csv
 rolling/raw/city.csv: $(ROLLINGCSVFILES) | rolling/raw/borough
-	{ cat $(HEADER) ; $(foreach csv,$(ROLLINGCSVFILES), tail -n+6 $(csv) ;) } > $@	
+	{ cat $(HEADER) ; $(foreach csv,$(ROLLINGCSVFILES),tail -n+6 $(csv) ;)} > $@
 
 .INTERMEDIATE: rolling/raw/borough/%.csv
 rolling/raw/borough/%.csv: rolling/raw/borough/%.xls | rolling/raw/borough
@@ -341,7 +341,7 @@ sales/raw/%.xls: | sales/raw
 # grep: removes blank lines
 sales/raw/%.csv: sales/raw/%.xls
 	$(BIN)/j --quiet --file $^ | \
-	sed -Ee 's/ +("?),/\1,/g' | \
+	sed -E 's/ +("?),/\1,/g' | \
 	awk '/^("?,?"[A-Z \-]+)$$/ { printf("%s", $$0); next } 1' | \
 	grep -v -e '^$$' -v -e '^,\+$$' -v -e 'Rolling Sales File' -v -e '^Building Class Category is based on' \
 	-v -e 'ANNUALIZE SALE' -v -e 'BUILDING CLASS AT TIME OF SALE' \
