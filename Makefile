@@ -81,12 +81,12 @@ SQLITE_CASE_APT = CASE \
 # Format a MM/DD/YY date into YYYY-MM-DD
 # Only works for years that begin with '20'
 SQLITE_FORMAT_DATE = '20' || substr(saledate, -2, 2) \
-	|| '-' || substr('00' || trim(trim(saledate, '0123456789'), '/'), -2, 2) \
-	|| '-' || substr('00' || substr(saledate, 0, instr(saledate, '/')), -2, 2)
+	|| '-' || substr('00' || substr(saledate, 0, instr(saledate, '/')), -2, 2) \
+	|| '-' || substr('00' || trim(trim(saledate, '0123456789'), '/'), -2, 2)
 
 SQLITE_SELECT = (borough * 1000000000 + block * 10000 + lot) BBL, \
 	borough, \
-    $(SQLITE_FORMAT_DATE) date, \
+    DATE($(SQLITE_FORMAT_DATE)) date, \
     $(SQLITE_CASE_ADDR) address, \
     $(SQLITE_CASE_APT) apt, \
     zipcode zip, \
@@ -264,7 +264,8 @@ rolling-sqlite-%: rolling/%-city.csv | $(DATABASE).db
 	$(SQLITE) $(SQLITEFLAGS) -separator , $| ".import $< sales_tmp"
 	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales WHERE STRFTIME('%Y-%m', date) = '$*';"
 	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) \
-	FROM sales_tmp WHERE STRFTIME('%Y-%m', DATE(saledate)) = '$*';"
+	FROM sales_tmp WHERE borough != 'BOROUGH' \
+	AND SUBSTR($(SQLITE_FORMAT_DATE), 1, 7) = '$*';"
 	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
 
 .INTERMEDIATE: rolling/raw/city.csv
