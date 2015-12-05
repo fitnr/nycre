@@ -245,6 +245,7 @@ rolling: rolling/raw/city.csv
 
 # load YYYY-MM into mysql $(DATABASE)
 rolling-mysql-%: rolling/%-city.csv
+	$(MYSQL) $(MYSQLFLAGS) --database $(DATABASE) --execute "DELETE FROM sales WHERE DATE_FORMAT(DATE(date), '%Y-%m') = '$*'"
 	$(MYSQL) $(MYSQLFLAGS) --database $(DATABASE) --local-infile \
 	--execute "LOAD DATA LOCAL INFILE '$^' INTO TABLE $(DATABASE).sales \
 	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES \
@@ -254,12 +255,14 @@ rolling-postgresql-%: rolling/%-city.csv
 	tail -n+2 $< | $(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "COPY sales_tmp($(SALES_TMP_FIELDS)) \
 	FROM stdin DELIMITER ',' CSV QUOTE '\"';"
 
+	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "DELETE FROM sales WHERE to_char(date, 'YYYY-MM') = '$*';"
 	$(PSQL) $(PSQLFLAGS) --dbname $(DATABASE) --command "WITH a AS ( \
 	DELETE FROM sales_tmp RETURNING $(PSQL_SELECT)) \
 	INSERT INTO sales SELECT $(SALES_FIELDS) FROM a;"
 
 rolling-sqlite-%: rolling/%-city.csv | $(DATABASE).db
 	$(SQLITE) $(SQLITEFLAGS) -separator , $| ".import $< sales_tmp"
+	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales WHERE STRFTIME('%Y-%m', date) = '$*';"
 	$(SQLITE) $(SQLITEFLAGS) $| "INSERT INTO sales SELECT $(SQLITE_SELECT) \
 	FROM sales_tmp WHERE STRFTIME('%Y-%m', DATE(saledate)) = '$*';"
 	$(SQLITE) $(SQLITEFLAGS) $| "DELETE FROM sales_tmp"
